@@ -7,22 +7,24 @@ let package = Package(
     products: [
         .library(
             name: "CapacitorLinkrunner",
-            targets: ["ExamplePlugin"])
+            targets: ["LinkrunnerPlugin"])
     ],
     dependencies: [
-        .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", from: "8.0.0")
+        .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", from: "8.0.0"),
+        .package(url: "https://github.com/linkrunner-labs/linkrunner-ios.git", from: "3.6.0")
     ],
     targets: [
         .target(
-            name: "ExamplePlugin",
+            name: "LinkrunnerPlugin",
             dependencies: [
                 .product(name: "Capacitor", package: "capacitor-swift-pm"),
-                .product(name: "Cordova", package: "capacitor-swift-pm")
+                .product(name: "Cordova", package: "capacitor-swift-pm"),
+                .product(name: "LinkrunnerKit", package: "linkrunner-ios")
             ],
-            path: "ios/Sources/ExamplePlugin"),
+            path: "ios/Sources/LinkrunnerPlugin"),
         .testTarget(
-            name: "ExamplePluginTests",
-            dependencies: ["ExamplePlugin"],
-            path: "ios/Tests/ExamplePluginTests")
+            name: "LinkrunnerPluginTests",
+            dependencies: ["LinkrunnerPlugin"],
+            path: "ios/Tests/LinkrunnerPluginTests")
     ]
 )
