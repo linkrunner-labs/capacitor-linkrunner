@@ -82,7 +82,7 @@ class LinkrunnerPlugin : Plugin() {
             } catch (e: Exception) {
                 Log.e(TAG, "Init failed", e)
                 call.reject("INIT_FAILED", e.message ?: "Initialization failed")
-
+            }
         }
     }
 
@@ -512,7 +512,7 @@ class LinkrunnerPlugin : Plugin() {
      */
     private fun convertToIntegrationData(jsObject: JSObject): io.linkrunner.sdk.models.IntegrationData {
         return io.linkrunner.sdk.models.IntegrationData(
-            clevertapId = jsObject.getString("clevertapId")
+            clevertapId = jsObject.getString("clevertap_id")
         )
     }
 }

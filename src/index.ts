@@ -12,6 +12,7 @@ const LinkrunnerPluginInstance = registerPlugin<LinkrunnerPlugin>('Linkrunner', 
 class Linkrunner {
   private token: string | null = null;
   private plugin: LinkrunnerPlugin;
+  private packageVersion: string = '1.0.0';
 
   constructor() {
     this.plugin = LinkrunnerPluginInstance;
@@ -19,12 +20,18 @@ class Linkrunner {
 
   /**
    * Get the SDK package version
-   * @returns The current SDK version from package.json
+   * @returns The current SDK version
    */
   getPackageVersion(): string {
-    // Read version from package.json
-    const packageJson = require('../package.json');
-    return packageJson.version;
+    return this.packageVersion;
+  }
+
+  /**
+   * Set the SDK package version
+   * @param version The version string to set
+   */
+  setPackageVersion(version: string): void {
+    this.packageVersion = version;
   }
 
   /**
