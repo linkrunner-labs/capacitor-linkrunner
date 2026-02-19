@@ -67,8 +67,7 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
     
     // Linkrunner Android SDK
-    // implementation project(':linkrunner-android:linkrunner')
-    implementation project(':linkrunner-android')
+    implementation 'io.linkrunner:android-sdk:3.5.3'
     
     // Kotlin standard libraries - use stable versions
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
