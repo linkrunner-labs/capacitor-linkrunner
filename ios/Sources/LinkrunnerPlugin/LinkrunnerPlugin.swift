@@ -286,7 +286,8 @@ extension LinkrunnerPlugin {
             amplitudeDeviceId: jsObject["amplitude_device_id"] as? String,
             posthogDistinctId: jsObject["posthog_distinct_id"] as? String,
             brazeDeviceId: jsObject["braze_device_id"] as? String,
-            gaAppInstanceId: jsObject["ga_app_instance_id"] as? String
+            gaAppInstanceId: jsObject["ga_app_instance_id"] as? String,
+            gaSessionId: jsObject["ga_session_id"] as? String
         )
     }
     

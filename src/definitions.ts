@@ -24,6 +24,8 @@ export interface UserData {
   braze_device_id?: string;
   /** Optional Google Analytics app instance ID */
   ga_app_instance_id?: string;
+  /** Optional Google Analytics session ID */
+  ga_session_id?: string;
 }
 
 /**

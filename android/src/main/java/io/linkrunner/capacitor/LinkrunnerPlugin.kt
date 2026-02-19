@@ -179,6 +179,7 @@ class LinkrunnerPlugin : Plugin() {
             posthogDistinctId = jsObject.getString("posthog_distinct_id"),
             brazeDeviceId = jsObject.getString("braze_device_id"),
             gaAppInstanceId = jsObject.getString("ga_app_instance_id"),
+            gaSessionId = jsObject.getString("ga_session_id"),
             userCreatedAt = jsObject.getString("user_created_at"),
             isFirstTimeUser = jsObject.getBool("is_first_time_user")
         )
