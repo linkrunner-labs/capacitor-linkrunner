@@ -26,6 +26,8 @@ export interface UserData {
   ga_app_instance_id?: string;
   /** Optional Google Analytics session ID */
   ga_session_id?: string;
+  /** Optional Netcore device GUID */
+  netcore_device_guid?: string;
 }
 
 /**
