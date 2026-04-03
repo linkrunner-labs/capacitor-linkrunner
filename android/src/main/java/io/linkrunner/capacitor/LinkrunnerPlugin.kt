@@ -479,11 +479,11 @@ class LinkrunnerPlugin : Plugin() {
                 } else {
                     val exception = result.exceptionOrNull()
                     Log.e(TAG, "HandleDeeplink failed", exception)
-                    call.reject("HANDLE_DEEPLINK_FAILED", exception?.message ?: "HandleDeeplink failed")
+                    call.reject(exception?.message ?: "HandleDeeplink failed", "HANDLE_DEEPLINK_FAILED")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "HandleDeeplink failed", e)
-                call.reject("HANDLE_DEEPLINK_FAILED", e.message ?: "HandleDeeplink failed")
+                call.reject(e.message ?: "HandleDeeplink failed", "HANDLE_DEEPLINK_FAILED")
             }
         }
     }
