@@ -185,6 +185,14 @@ export interface EnablePIIHashingOptions {
 }
 
 /**
+ * Options for handling deeplinks
+ */
+export interface HandleDeeplinkOptions {
+  /** The deeplink URL that opened the app */
+  deeplinkUrl: string;
+}
+
+/**
  * Result from getAttributionData
  */
 export interface AttributionDataResult {
@@ -249,6 +257,13 @@ export interface LinkrunnerPlugin {
    * @param options Options to enable or disable PII hashing
    */
   enablePIIHashing(options: EnablePIIHashingOptions): Promise<void>;
+
+  /**
+   * Handle a deeplink for re-engagement attribution
+   * Call this method when the app is opened via a deeplink, regardless of app state
+   * @param options Options containing the deeplink URL
+   */
+  handleDeeplink(options: HandleDeeplinkOptions): Promise<void>;
 
   /**
    * Get the SDK package version

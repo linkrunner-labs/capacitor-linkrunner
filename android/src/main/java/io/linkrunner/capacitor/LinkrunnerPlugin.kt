@@ -457,6 +457,38 @@ class LinkrunnerPlugin : Plugin() {
     }
 
     /**
+     * Handle a deeplink for re-engagement attribution
+     * Call this method when the app is opened via a deeplink, regardless of app state
+     */
+    @PluginMethod
+    fun handleDeeplink(call: PluginCall) {
+        val deeplinkUrl = call.getString("deeplinkUrl")
+
+        // Handle empty URLs gracefully (matches SDK behavior)
+        if (deeplinkUrl.isNullOrBlank()) {
+            call.resolve()
+            return
+        }
+
+        coroutineScope.launch {
+            try {
+                val result = linkrunner.handleDeeplink(deeplinkUrl)
+
+                if (result.isSuccess) {
+                    call.resolve()
+                } else {
+                    val exception = result.exceptionOrNull()
+                    Log.e(TAG, "HandleDeeplink failed", exception)
+                    call.reject("HANDLE_DEEPLINK_FAILED", exception?.message ?: "HandleDeeplink failed")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "HandleDeeplink failed", e)
+                call.reject("HANDLE_DEEPLINK_FAILED", e.message ?: "HandleDeeplink failed")
+            }
+        }
+    }
+
+    /**
      * Get the package version
      */
     @PluginMethod

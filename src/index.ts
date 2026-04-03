@@ -12,7 +12,7 @@ const LinkrunnerPluginInstance = registerPlugin<LinkrunnerPlugin>('Linkrunner', 
 class Linkrunner {
   private token: string | null = null;
   private plugin: LinkrunnerPlugin;
-  private packageVersion: string = '1.0.0';
+  private packageVersion: string = '1.2.0';
 
   constructor() {
     this.plugin = LinkrunnerPluginInstance;
@@ -410,6 +410,38 @@ class Linkrunner {
       console.log(`Linkrunner enablePIIHashing successful (enabled: ${enabledValue})`);
     } catch (error) {
       console.error('Error during Linkrunner enablePIIHashing', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Handle a deeplink for re-engagement attribution.
+   * @param deeplinkUrl The full deeplink URL that opened the app
+   */
+  async handleDeeplink(deeplinkUrl: string | null): Promise<void> {
+    // Handle null or empty URLs gracefully
+    if (!deeplinkUrl || deeplinkUrl.trim().length === 0) {
+      console.log('Linkrunner: handleDeeplink called with null or empty URL, ignoring');
+      return;
+    }
+
+    // Check initialization state
+    if (!this.token) {
+      const error = 'Linkrunner: handleDeeplink failed, SDK not initialized';
+      console.error(error);
+      throw new Error(error);
+    }
+
+    try {
+      // Pass deeplink URL to native plugin
+      await this.plugin.handleDeeplink({
+        deeplinkUrl,
+      });
+
+      // Add debug logging
+      console.log('Linkrunner handleDeeplink successful');
+    } catch (error) {
+      console.error('Error during Linkrunner handleDeeplink', error);
       throw error;
     }
   }

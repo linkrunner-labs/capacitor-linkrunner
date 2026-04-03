@@ -20,6 +20,7 @@ public class LinkrunnerPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "getAttributionData", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setAdditionalData", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "enablePIIHashing", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "handleDeeplink", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getPackageVersion", returnType: CAPPluginReturnPromise)
     ]
     
@@ -250,6 +251,29 @@ public class LinkrunnerPlugin: CAPPlugin, CAPBridgedPlugin {
             call.resolve()
         } else {
             call.reject("iOS 15.0 or later is required")
+        }
+    }
+    
+    /**
+     * Handle a deeplink for re-engagement attribution
+     * Call this method when the app is opened via a deeplink, regardless of app state
+     */
+    @objc func handleDeeplink(_ call: CAPPluginCall) {
+        let deeplinkUrl = call.getString("deeplinkUrl")
+        
+        // Handle empty URLs gracefully (matches SDK behavior)
+        if deeplinkUrl == nil || deeplinkUrl!.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            call.resolve()
+            return
+        }
+        
+        Task {
+            if #available(iOS 15.0, *) {
+                await linkrunner.handleDeeplink(url: deeplinkUrl)
+                call.resolve()
+            } else {
+                call.reject("iOS 15.0 or later is required")
+            }
         }
     }
     
