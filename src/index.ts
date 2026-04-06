@@ -1,6 +1,6 @@
 import { registerPlugin } from '@capacitor/core';
 
-import type { LinkrunnerPlugin, UserData, AttributionData, IntegrationData, PaymentType, PaymentStatus } from './definitions';
+import type { LinkrunnerPlugin, UserData, AttributionData, IntegrationData, PaymentType, PaymentStatus, HandleDeeplinkResult } from './definitions';
 
 const LinkrunnerPluginInstance = registerPlugin<LinkrunnerPlugin>('Linkrunner', {
   web: () => import('./web').then((m) => new m.LinkrunnerWeb()),
@@ -12,7 +12,7 @@ const LinkrunnerPluginInstance = registerPlugin<LinkrunnerPlugin>('Linkrunner', 
 class Linkrunner {
   private token: string | null = null;
   private plugin: LinkrunnerPlugin;
-  private packageVersion: string = '1.0.0';
+  private packageVersion: string = '1.2.0';
 
   constructor() {
     this.plugin = LinkrunnerPluginInstance;
@@ -410,6 +410,51 @@ class Linkrunner {
       console.log(`Linkrunner enablePIIHashing successful (enabled: ${enabledValue})`);
     } catch (error) {
       console.error('Error during Linkrunner enablePIIHashing', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Handle a deeplink for re-engagement attribution.
+   * @param deeplinkUrl The full deeplink URL that opened the app
+   * @returns Deeplink processing result including status and resolved URL
+   */
+  async handleDeeplink(deeplinkUrl: string | null): Promise<HandleDeeplinkResult> {
+    // Handle null or empty URLs gracefully
+    if (!deeplinkUrl || deeplinkUrl.trim().length === 0) {
+      console.log('Linkrunner: handleDeeplink called with null or empty URL, ignoring');
+      return {
+        msg: 'Deeplink URL is empty',
+        status: 200,
+        data: {
+          is_linkrunner: false,
+          deeplink: '',
+        },
+      };
+    }
+
+    // Normalize the URL before forwarding to native plugin
+    const normalizedUrl = deeplinkUrl.trim();
+
+    // Check initialization state
+    if (!this.token) {
+      const error = 'Linkrunner: handleDeeplink failed, SDK not initialized';
+      console.error(error);
+      throw new Error(error);
+    }
+
+    try {
+      // Pass normalized deeplink URL to native plugin
+      const result = await this.plugin.handleDeeplink({
+        deeplinkUrl: normalizedUrl,
+      });
+
+      // Add debug logging
+      console.log('Linkrunner handleDeeplink successful');
+
+      return result;
+    } catch (error) {
+      console.error('Error during Linkrunner handleDeeplink', error);
       throw error;
     }
   }
