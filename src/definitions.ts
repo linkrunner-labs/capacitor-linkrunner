@@ -193,6 +193,30 @@ export interface HandleDeeplinkOptions {
 }
 
 /**
+ * Data returned from handleDeeplink
+ */
+export interface HandleDeeplinkData {
+  /** Whether the deeplink is a Linkrunner link */
+  is_linkrunner: boolean;
+  /** The resolved or original deeplink URL */
+  deeplink: string;
+  /** Whether the deeplink is still being processed (only present for Linkrunner links) */
+  processing?: boolean;
+}
+
+/**
+ * Result from handleDeeplink
+ */
+export interface HandleDeeplinkResult {
+  /** Response message */
+  msg: string;
+  /** HTTP status code */
+  status: number;
+  /** Deeplink data (present on success responses) */
+  data?: HandleDeeplinkData;
+}
+
+/**
  * Result from getAttributionData
  */
 export interface AttributionDataResult {
@@ -262,8 +286,9 @@ export interface LinkrunnerPlugin {
    * Handle a deeplink for re-engagement attribution
    * Call this method when the app is opened via a deeplink, regardless of app state
    * @param options Options containing the deeplink URL
+   * @returns Deeplink processing result including status and resolved URL
    */
-  handleDeeplink(options: HandleDeeplinkOptions): Promise<void>;
+  handleDeeplink(options: HandleDeeplinkOptions): Promise<HandleDeeplinkResult>;
 
   /**
    * Get the SDK package version

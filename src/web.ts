@@ -11,6 +11,7 @@ import type {
   SetAdditionalDataOptions,
   EnablePIIHashingOptions,
   HandleDeeplinkOptions,
+  HandleDeeplinkResult,
   AttributionDataResult,
 } from './definitions';
 
@@ -52,8 +53,16 @@ export class LinkrunnerWeb extends WebPlugin implements LinkrunnerPlugin {
     console.warn('Linkrunner: enablePIIHashing is not available on web platform');
   }
 
-  async handleDeeplink(_options: HandleDeeplinkOptions): Promise<void> {
+  async handleDeeplink(_options: HandleDeeplinkOptions): Promise<HandleDeeplinkResult> {
     console.warn('Linkrunner: handleDeeplink is not available on web platform');
+    return {
+      msg: 'Not available on web platform',
+      status: 200,
+      data: {
+        is_linkrunner: false,
+        deeplink: _options.deeplinkUrl,
+      },
+    };
   }
 
   async getPackageVersion(): Promise<{ version: string }> {

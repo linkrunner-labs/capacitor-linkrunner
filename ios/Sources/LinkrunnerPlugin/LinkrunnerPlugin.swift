@@ -269,8 +269,21 @@ public class LinkrunnerPlugin: CAPPlugin, CAPBridgedPlugin {
         
         Task {
             if #available(iOS 15.0, *) {
-                await linkrunner.handleDeeplink(url: deeplinkUrl)
-                call.resolve()
+                let deeplinkData = await linkrunner.handleDeeplink(url: deeplinkUrl)
+                
+                var result: JSObject = [:]
+                result["msg"] = deeplinkData.msg
+                result["status"] = deeplinkData.status
+                
+                var data: JSObject = [:]
+                data["is_linkrunner"] = deeplinkData.data.isLinkrunner
+                data["deeplink"] = deeplinkData.data.deeplink
+                if let processing = deeplinkData.data.processing {
+                    data["processing"] = processing
+                }
+                
+                result["data"] = data
+                call.resolve(result)
             } else {
                 call.reject("iOS 15.0 or later is required")
             }

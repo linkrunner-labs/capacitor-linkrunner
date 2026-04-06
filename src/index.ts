@@ -1,6 +1,6 @@
 import { registerPlugin } from '@capacitor/core';
 
-import type { LinkrunnerPlugin, UserData, AttributionData, IntegrationData, PaymentType, PaymentStatus } from './definitions';
+import type { LinkrunnerPlugin, UserData, AttributionData, IntegrationData, PaymentType, PaymentStatus, HandleDeeplinkResult } from './definitions';
 
 const LinkrunnerPluginInstance = registerPlugin<LinkrunnerPlugin>('Linkrunner', {
   web: () => import('./web').then((m) => new m.LinkrunnerWeb()),
@@ -417,8 +417,9 @@ class Linkrunner {
   /**
    * Handle a deeplink for re-engagement attribution.
    * @param deeplinkUrl The full deeplink URL that opened the app
+   * @returns Deeplink processing result including status and resolved URL
    */
-  async handleDeeplink(deeplinkUrl: string | null): Promise<void> {
+  async handleDeeplink(deeplinkUrl: string | null): Promise<HandleDeeplinkResult | void> {
     // Handle null or empty URLs gracefully
     if (!deeplinkUrl || deeplinkUrl.trim().length === 0) {
       console.log('Linkrunner: handleDeeplink called with null or empty URL, ignoring');
@@ -434,12 +435,14 @@ class Linkrunner {
 
     try {
       // Pass deeplink URL to native plugin
-      await this.plugin.handleDeeplink({
+      const result = await this.plugin.handleDeeplink({
         deeplinkUrl,
       });
 
       // Add debug logging
       console.log('Linkrunner handleDeeplink successful');
+
+      return result;
     } catch (error) {
       console.error('Error during Linkrunner handleDeeplink', error);
       throw error;

@@ -475,7 +475,22 @@ class LinkrunnerPlugin : Plugin() {
                 val result = linkrunner.handleDeeplink(deeplinkUrl)
 
                 if (result.isSuccess) {
-                    call.resolve()
+                    val deeplinkData = result.getOrNull()
+                    if (deeplinkData != null) {
+                        val response = JSObject()
+                        response.put("msg", deeplinkData.msg)
+                        response.put("status", deeplinkData.status)
+
+                        val data = JSObject()
+                        data.put("is_linkrunner", deeplinkData.data.isLinkrunner)
+                        data.put("deeplink", deeplinkData.data.deeplink)
+                        deeplinkData.data.processing?.let { data.put("processing", it) }
+
+                        response.put("data", data)
+                        call.resolve(response)
+                    } else {
+                        call.reject("HandleDeeplink failed", "HANDLE_DEEPLINK_FAILED")
+                    }
                 } else {
                     val exception = result.exceptionOrNull()
                     Log.e(TAG, "HandleDeeplink failed", exception)
