@@ -419,12 +419,22 @@ class Linkrunner {
    * @param deeplinkUrl The full deeplink URL that opened the app
    * @returns Deeplink processing result including status and resolved URL
    */
-  async handleDeeplink(deeplinkUrl: string | null): Promise<HandleDeeplinkResult | void> {
+  async handleDeeplink(deeplinkUrl: string | null): Promise<HandleDeeplinkResult> {
     // Handle null or empty URLs gracefully
     if (!deeplinkUrl || deeplinkUrl.trim().length === 0) {
       console.log('Linkrunner: handleDeeplink called with null or empty URL, ignoring');
-      return;
+      return {
+        msg: 'Deeplink URL is empty',
+        status: 200,
+        data: {
+          is_linkrunner: false,
+          deeplink: '',
+        },
+      };
     }
+
+    // Normalize the URL before forwarding to native plugin
+    const normalizedUrl = deeplinkUrl.trim();
 
     // Check initialization state
     if (!this.token) {
@@ -434,9 +444,9 @@ class Linkrunner {
     }
 
     try {
-      // Pass deeplink URL to native plugin
+      // Pass normalized deeplink URL to native plugin
       const result = await this.plugin.handleDeeplink({
-        deeplinkUrl,
+        deeplinkUrl: normalizedUrl,
       });
 
       // Add debug logging

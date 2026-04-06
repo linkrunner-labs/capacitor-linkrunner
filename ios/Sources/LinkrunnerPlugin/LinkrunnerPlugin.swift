@@ -261,29 +261,20 @@ public class LinkrunnerPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func handleDeeplink(_ call: CAPPluginCall) {
         let deeplinkUrl = call.getString("deeplinkUrl")
         
-        // Handle empty URLs gracefully (matches SDK behavior)
-        if deeplinkUrl == nil || deeplinkUrl!.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            call.resolve()
-            return
-        }
-        
         Task {
             if #available(iOS 15.0, *) {
                 let deeplinkData = await linkrunner.handleDeeplink(url: deeplinkUrl)
                 
-                var result: JSObject = [:]
-                result["msg"] = deeplinkData.msg
-                result["status"] = deeplinkData.status
-                
                 var data: JSObject = [:]
-                data["is_linkrunner"] = deeplinkData.data.isLinkrunner
-                data["deeplink"] = deeplinkData.data.deeplink
-                if let processing = deeplinkData.data.processing {
+                data["is_linkrunner"] = deeplinkData.isLinkrunner
+                if let deeplink = deeplinkData.deeplink {
+                    data["deeplink"] = deeplink
+                }
+                if let processing = deeplinkData.processing {
                     data["processing"] = processing
                 }
                 
-                result["data"] = data
-                call.resolve(result)
+                call.resolve(["data": data])
             } else {
                 call.reject("iOS 15.0 or later is required")
             }

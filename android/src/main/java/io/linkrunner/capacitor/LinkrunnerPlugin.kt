@@ -464,12 +464,6 @@ class LinkrunnerPlugin : Plugin() {
     fun handleDeeplink(call: PluginCall) {
         val deeplinkUrl = call.getString("deeplinkUrl")
 
-        // Handle empty URLs gracefully (matches SDK behavior)
-        if (deeplinkUrl.isNullOrBlank()) {
-            call.resolve()
-            return
-        }
-
         coroutineScope.launch {
             try {
                 val result = linkrunner.handleDeeplink(deeplinkUrl)
@@ -478,13 +472,11 @@ class LinkrunnerPlugin : Plugin() {
                     val deeplinkData = result.getOrNull()
                     if (deeplinkData != null) {
                         val response = JSObject()
-                        response.put("msg", deeplinkData.msg)
-                        response.put("status", deeplinkData.status)
 
                         val data = JSObject()
-                        data.put("is_linkrunner", deeplinkData.data.isLinkrunner)
-                        data.put("deeplink", deeplinkData.data.deeplink)
-                        deeplinkData.data.processing?.let { data.put("processing", it) }
+                        data.put("is_linkrunner", deeplinkData.isLinkrunner)
+                        data.put("deeplink", deeplinkData.deeplink)
+                        deeplinkData.processing?.let { data.put("processing", it) }
 
                         response.put("data", data)
                         call.resolve(response)
