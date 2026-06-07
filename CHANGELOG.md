@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0] - 2026-06-05
+
+- Added `setPushToken` method for registering FCM (Android) and APNs (iOS) push notification tokens
+- Added `handleDeeplink` method for re-engagement attribution when the app is opened via a deeplink
+- Bumped underlying `LinkrunnerKit` (iOS) dependency to `3.10.0`
+- Bumped underlying `io.linkrunner:android-sdk` (Android) dependency to `3.8.1`
+
 ## [1.1.0] - 2026-03-21
 
 - Added `netcore_device_guid` field to `UserData` interface for Netcore integration support

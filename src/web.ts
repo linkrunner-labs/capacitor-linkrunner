@@ -10,6 +10,9 @@ import type {
   TrackEventOptions,
   SetAdditionalDataOptions,
   EnablePIIHashingOptions,
+  SetPushTokenOptions,
+  HandleDeeplinkOptions,
+  HandleDeeplinkResult,
   AttributionDataResult,
 } from './definitions';
 
@@ -49,6 +52,15 @@ export class LinkrunnerWeb extends WebPlugin implements LinkrunnerPlugin {
 
   async enablePIIHashing(options: EnablePIIHashingOptions): Promise<void> {
     console.warn('Linkrunner: enablePIIHashing is not available on web platform', options);
+  }
+
+  async setPushToken(options: SetPushTokenOptions): Promise<void> {
+    console.warn('Linkrunner: setPushToken is not available on web platform', options);
+  }
+
+  async handleDeeplink(options: HandleDeeplinkOptions): Promise<HandleDeeplinkResult> {
+    console.warn('Linkrunner: handleDeeplink is not available on web platform', options);
+    return {};
   }
 
   async getPackageVersion(): Promise<{ version: string }> {

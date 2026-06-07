@@ -1,6 +1,6 @@
 import { registerPlugin } from '@capacitor/core';
 
-import type { LinkrunnerPlugin, UserData, AttributionData, IntegrationData, PaymentType, PaymentStatus } from './definitions';
+import type { LinkrunnerPlugin, UserData, AttributionData, DeeplinkData, IntegrationData, PaymentType, PaymentStatus } from './definitions';
 
 const LinkrunnerPluginInstance = registerPlugin<LinkrunnerPlugin>('Linkrunner', {
   web: () => import('./web').then((m) => new m.LinkrunnerWeb()),
@@ -12,7 +12,7 @@ const LinkrunnerPluginInstance = registerPlugin<LinkrunnerPlugin>('Linkrunner', 
 class Linkrunner {
   private token: string | null = null;
   private plugin: LinkrunnerPlugin;
-  private packageVersion: string = '1.0.0';
+  private packageVersion: string = '1.2.0';
 
   constructor() {
     this.plugin = LinkrunnerPluginInstance;
@@ -410,6 +410,56 @@ class Linkrunner {
       console.log(`Linkrunner enablePIIHashing successful (enabled: ${enabledValue})`);
     } catch (error) {
       console.error('Error during Linkrunner enablePIIHashing', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Set the push notification token for the device
+   * @param pushToken Required push token (FCM on Android, APNs on iOS)
+   */
+  async setPushToken(pushToken: string): Promise<void> {
+    if (!this.token) {
+      console.error('Linkrunner: Setting push token failed, SDK not initialized');
+      return;
+    }
+
+    if (!pushToken || pushToken.trim().length === 0) {
+      throw new Error('Push token cannot be empty');
+    }
+
+    try {
+      await this.plugin.setPushToken({ pushToken });
+      console.log('Linkrunner setPushToken successful');
+    } catch (error) {
+      console.error('Error during Linkrunner setPushToken', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Handle a deeplink for re-engagement attribution.
+   * Call this when the app is opened via a deeplink.
+   * @param deeplinkUrl The full deeplink URL that opened the app
+   * @returns Resolved DeeplinkData, or null for invalid/empty input
+   */
+  async handleDeeplink(deeplinkUrl: string | null): Promise<DeeplinkData | null> {
+    if (!deeplinkUrl || deeplinkUrl.trim().length === 0) {
+      console.log('Linkrunner: handleDeeplink called with null or empty URL, ignoring');
+      return null;
+    }
+
+    if (!this.token) {
+      console.error('Linkrunner: handleDeeplink failed, SDK not initialized');
+      return null;
+    }
+
+    try {
+      const result = await this.plugin.handleDeeplink({ deeplinkUrl });
+      console.log('Linkrunner handleDeeplink successful for URL:', deeplinkUrl);
+      return result.data ?? null;
+    } catch (error) {
+      console.error('Error during Linkrunner handleDeeplink', error);
       throw error;
     }
   }
