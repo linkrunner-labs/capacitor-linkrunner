@@ -20,6 +20,8 @@ public class LinkrunnerPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "getAttributionData", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setAdditionalData", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "enablePIIHashing", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "setPushToken", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "handleDeeplink", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getPackageVersion", returnType: CAPPluginReturnPromise)
     ]
     
@@ -253,6 +255,55 @@ public class LinkrunnerPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
     
+    /**
+     * Set the push notification token
+     */
+    @objc func setPushToken(_ call: CAPPluginCall) {
+        guard let pushToken = call.getString("pushToken")?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !pushToken.isEmpty else {
+            call.reject("Push token cannot be empty")
+            return
+        }
+
+        Task {
+            if #available(iOS 15.0, *) {
+                await linkrunner.setPushToken(pushToken)
+                call.resolve()
+            } else {
+                call.reject("iOS 15.0 or later is required")
+            }
+        }
+    }
+
+    /**
+     * Handle a deeplink for re-engagement attribution
+     */
+    @objc func handleDeeplink(_ call: CAPPluginCall) {
+        guard let deeplinkUrl = call.getString("deeplinkUrl")?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !deeplinkUrl.isEmpty else {
+            call.resolve()
+            return
+        }
+
+        Task {
+            if #available(iOS 15.0, *) {
+                let response = await linkrunner.handleDeeplink(url: deeplinkUrl)
+                var data: JSObject = [
+                    "isLinkrunner": response.isLinkrunner
+                ]
+                if let deeplink = response.deeplink {
+                    data["deeplink"] = deeplink
+                }
+                if let processing = response.processing {
+                    data["processing"] = processing
+                }
+                call.resolve(["data": data])
+            } else {
+                call.reject("iOS 15.0 or later is required")
+            }
+        }
+    }
+
     /**
      * Get the package version
      */

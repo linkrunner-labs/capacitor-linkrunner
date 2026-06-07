@@ -457,6 +457,77 @@ class LinkrunnerPlugin : Plugin() {
     }
 
     /**
+     * Set the push notification token
+     */
+    @PluginMethod
+    fun setPushToken(call: PluginCall) {
+        val pushToken = call.getString("pushToken")
+
+        if (pushToken.isNullOrBlank()) {
+            call.reject("INVALID_PARAMETER", "Push token cannot be empty")
+            return
+        }
+
+        coroutineScope.launch {
+            try {
+                val result = linkrunner.setPushToken(pushToken)
+
+                if (result.isSuccess) {
+                    call.resolve()
+                } else {
+                    val exception = result.exceptionOrNull()
+                    Log.e(TAG, "SetPushToken failed", exception)
+                    call.reject("SET_PUSH_TOKEN_FAILED", exception?.message ?: "SetPushToken failed")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "SetPushToken failed", e)
+                call.reject("SET_PUSH_TOKEN_FAILED", e.message ?: "SetPushToken failed")
+            }
+        }
+    }
+
+    /**
+     * Handle a deeplink for re-engagement attribution
+     */
+    @PluginMethod
+    fun handleDeeplink(call: PluginCall) {
+        val deeplinkUrl = call.getString("deeplinkUrl")
+
+        if (deeplinkUrl.isNullOrBlank()) {
+            call.resolve()
+            return
+        }
+
+        coroutineScope.launch {
+            try {
+                val result = linkrunner.handleDeeplink(deeplinkUrl)
+
+                if (result.isSuccess) {
+                    val response = result.getOrNull()
+                    val data = JSObject()
+                    if (response != null) {
+                        data.put("isLinkrunner", response.isLinkrunner)
+                        response.deeplink?.let { data.put("deeplink", it) }
+                        response.processing?.let { data.put("processing", it) }
+                    } else {
+                        data.put("isLinkrunner", false)
+                    }
+                    val wrapper = JSObject()
+                    wrapper.put("data", data)
+                    call.resolve(wrapper)
+                } else {
+                    val exception = result.exceptionOrNull()
+                    Log.e(TAG, "HandleDeeplink failed", exception)
+                    call.reject("HANDLE_DEEPLINK_FAILED", exception?.message ?: "HandleDeeplink failed")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "HandleDeeplink failed", e)
+                call.reject("HANDLE_DEEPLINK_FAILED", e.message ?: "HandleDeeplink failed")
+            }
+        }
+    }
+
+    /**
      * Get the package version
      */
     @PluginMethod

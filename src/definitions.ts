@@ -185,6 +185,42 @@ export interface EnablePIIHashingOptions {
 }
 
 /**
+ * Options for setting the push notification token
+ */
+export interface SetPushTokenOptions {
+  /** Required push notification token (FCM on Android, APNs on iOS) */
+  pushToken: string;
+}
+
+/**
+ * Options for handling a deeplink
+ */
+export interface HandleDeeplinkOptions {
+  /** The full deeplink URL that opened the app */
+  deeplinkUrl: string;
+}
+
+/**
+ * Deeplink data returned from handleDeeplink
+ */
+export interface DeeplinkData {
+  /** Whether the deeplink originated from Linkrunner */
+  isLinkrunner: boolean;
+  /** The resolved deeplink URL */
+  deeplink?: string;
+  /** Whether the deeplink is still being processed */
+  processing?: boolean;
+}
+
+/**
+ * Result from handleDeeplink (native bridge shape)
+ */
+export interface HandleDeeplinkResult {
+  /** Deeplink data, when available */
+  data?: DeeplinkData;
+}
+
+/**
  * Result from getAttributionData
  */
 export interface AttributionDataResult {
@@ -249,6 +285,19 @@ export interface LinkrunnerPlugin {
    * @param options Options to enable or disable PII hashing
    */
   enablePIIHashing(options: EnablePIIHashingOptions): Promise<void>;
+
+  /**
+   * Set the push notification token for the device
+   * @param options Options containing the push token
+   */
+  setPushToken(options: SetPushTokenOptions): Promise<void>;
+
+  /**
+   * Handle a deeplink for re-engagement attribution
+   * @param options Options containing the deeplink URL
+   * @returns Deeplink data wrapped in a result object
+   */
+  handleDeeplink(options: HandleDeeplinkOptions): Promise<HandleDeeplinkResult>;
 
   /**
    * Get the SDK package version
