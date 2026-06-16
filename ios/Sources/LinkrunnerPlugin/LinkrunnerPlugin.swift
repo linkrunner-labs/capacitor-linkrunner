@@ -21,6 +21,7 @@ public class LinkrunnerPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "setAdditionalData", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "enablePIIHashing", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setPushToken", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "setCustomerUserId", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "handleDeeplink", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getPackageVersion", returnType: CAPPluginReturnPromise)
     ]
@@ -265,6 +266,23 @@ public class LinkrunnerPlugin: CAPPlugin, CAPBridgedPlugin {
         Task {
             if #available(iOS 15.0, *) {
                 await linkrunner.setPushToken(pushToken)
+                call.resolve()
+            } else {
+                call.reject("iOS 15.0 or later is required")
+            }
+        }
+    }
+
+    @objc func setCustomerUserId(_ call: CAPPluginCall) {
+        guard let userId = call.getString("userId")?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !userId.isEmpty else {
+            call.reject("Customer user ID cannot be empty")
+            return
+        }
+
+        Task {
+            if #available(iOS 15.0, *) {
+                await linkrunner.setCustomerUserId(userId)
                 call.resolve()
             } else {
                 call.reject("iOS 15.0 or later is required")

@@ -481,6 +481,33 @@ class LinkrunnerPlugin : Plugin() {
         }
     }
 
+    @PluginMethod
+    fun setCustomerUserId(call: PluginCall) {
+        val userId = call.getString("userId")
+
+        if (userId.isNullOrBlank()) {
+            call.reject("INVALID_PARAMETER", "Customer user ID cannot be empty")
+            return
+        }
+
+        coroutineScope.launch {
+            try {
+                val result = linkrunner.setCustomerUserId(userId)
+
+                if (result.isSuccess) {
+                    call.resolve()
+                } else {
+                    val exception = result.exceptionOrNull()
+                    Log.e(TAG, "SetCustomerUserId failed", exception)
+                    call.reject("SET_CUSTOMER_USER_ID_FAILED", exception?.message ?: "SetCustomerUserId failed")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "SetCustomerUserId failed", e)
+                call.reject("SET_CUSTOMER_USER_ID_FAILED", e.message ?: "SetCustomerUserId failed")
+            }
+        }
+    }
+
     /**
      * Handle a deeplink for re-engagement attribution
      */

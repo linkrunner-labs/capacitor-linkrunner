@@ -193,6 +193,14 @@ export interface SetPushTokenOptions {
 }
 
 /**
+ * Options for setting the customer user ID
+ */
+export interface SetCustomerUserIdOptions {
+  /** Required customer user ID */
+  userId: string;
+}
+
+/**
  * Options for handling a deeplink
  */
 export interface HandleDeeplinkOptions {
@@ -291,6 +299,12 @@ export interface LinkrunnerPlugin {
    * @param options Options containing the push token
    */
   setPushToken(options: SetPushTokenOptions): Promise<void>;
+
+  /**
+   * Set the customer user ID
+   * @param options Options containing the customer user ID
+   */
+  setCustomerUserId(options: SetCustomerUserIdOptions): Promise<void>;
 
   /**
    * Handle a deeplink for re-engagement attribution

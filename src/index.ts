@@ -430,6 +430,25 @@ class Linkrunner {
     }
   }
 
+  async setCustomerUserId(userId: string): Promise<void> {
+    if (!this.token) {
+      console.error('Linkrunner: Setting customer user ID failed, SDK not initialized');
+      return;
+    }
+
+    if (!userId || userId.trim().length === 0) {
+      throw new Error('Customer user ID cannot be empty');
+    }
+
+    try {
+      await this.plugin.setCustomerUserId({ userId });
+      console.log('Linkrunner setCustomerUserId successful');
+    } catch (error) {
+      console.error('Error during Linkrunner setCustomerUserId', error);
+      throw error;
+    }
+  }
+
   /**
    * Handle a deeplink for re-engagement attribution.
    * Call this when the app is opened via a deeplink.
