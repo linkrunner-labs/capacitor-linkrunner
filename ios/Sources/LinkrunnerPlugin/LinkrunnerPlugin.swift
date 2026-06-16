@@ -122,11 +122,8 @@ public class LinkrunnerPlugin: CAPPlugin, CAPBridgedPlugin {
      * Capture a payment event
      */
     @objc func capturePayment(_ call: CAPPluginCall) {
-        guard let userId = call.getString("userId"), !userId.isEmpty else {
-            call.reject("userId is required")
-            return
-        }
-        
+        let userId = call.getString("userId") ?? ""
+
         guard let amount = call.getDouble("amount") else {
             call.reject("amount is required")
             return

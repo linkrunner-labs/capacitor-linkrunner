@@ -207,16 +207,11 @@ class LinkrunnerPlugin : Plugin() {
      */
     @PluginMethod
     fun capturePayment(call: PluginCall) {
-        val userId = call.getString("userId")
+        val userId = call.getString("userId") ?: ""
         val amount = call.getDouble("amount")
         val paymentId = call.getString("paymentId")
         val typeStr = call.getString("type", "DEFAULT")
         val statusStr = call.getString("status", "PAYMENT_COMPLETED")
-
-        if (userId.isNullOrBlank()) {
-            call.reject("INVALID_PARAMETER", "userId is required")
-            return
-        }
 
         if (amount == null) {
             call.reject("INVALID_PARAMETER", "amount is required")

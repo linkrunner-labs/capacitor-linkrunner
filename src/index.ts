@@ -172,13 +172,6 @@ class Linkrunner {
       throw new Error(error);
     }
 
-    // Validate required fields (userId, amount)
-    if (!options.userId || options.userId.trim().length === 0) {
-      const error = 'Linkrunner: CapturePayment failed, userId is required';
-      console.error(error);
-      throw new Error(error);
-    }
-
     if (options.amount === undefined || options.amount === null) {
       const error = 'Linkrunner: CapturePayment failed, amount is required';
       console.error(error);
