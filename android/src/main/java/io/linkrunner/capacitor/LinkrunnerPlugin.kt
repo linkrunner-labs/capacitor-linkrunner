@@ -207,16 +207,11 @@ class LinkrunnerPlugin : Plugin() {
      */
     @PluginMethod
     fun capturePayment(call: PluginCall) {
-        val userId = call.getString("userId")
+        val userId = call.getString("userId") ?: ""
         val amount = call.getDouble("amount")
         val paymentId = call.getString("paymentId")
         val typeStr = call.getString("type", "DEFAULT")
         val statusStr = call.getString("status", "PAYMENT_COMPLETED")
-
-        if (userId.isNullOrBlank()) {
-            call.reject("INVALID_PARAMETER", "userId is required")
-            return
-        }
 
         if (amount == null) {
             call.reject("INVALID_PARAMETER", "amount is required")
@@ -482,6 +477,33 @@ class LinkrunnerPlugin : Plugin() {
             } catch (e: Exception) {
                 Log.e(TAG, "SetPushToken failed", e)
                 call.reject("SET_PUSH_TOKEN_FAILED", e.message ?: "SetPushToken failed")
+            }
+        }
+    }
+
+    @PluginMethod
+    fun setCustomerUserId(call: PluginCall) {
+        val userId = call.getString("userId")
+
+        if (userId.isNullOrBlank()) {
+            call.reject("INVALID_PARAMETER", "Customer user ID cannot be empty")
+            return
+        }
+
+        coroutineScope.launch {
+            try {
+                val result = linkrunner.setCustomerUserId(userId)
+
+                if (result.isSuccess) {
+                    call.resolve()
+                } else {
+                    val exception = result.exceptionOrNull()
+                    Log.e(TAG, "SetCustomerUserId failed", exception)
+                    call.reject("SET_CUSTOMER_USER_ID_FAILED", exception?.message ?: "SetCustomerUserId failed")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "SetCustomerUserId failed", e)
+                call.reject("SET_CUSTOMER_USER_ID_FAILED", e.message ?: "SetCustomerUserId failed")
             }
         }
     }

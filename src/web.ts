@@ -11,6 +11,7 @@ import type {
   SetAdditionalDataOptions,
   EnablePIIHashingOptions,
   SetPushTokenOptions,
+  SetCustomerUserIdOptions,
   HandleDeeplinkOptions,
   HandleDeeplinkResult,
   AttributionDataResult,
@@ -56,6 +57,10 @@ export class LinkrunnerWeb extends WebPlugin implements LinkrunnerPlugin {
 
   async setPushToken(options: SetPushTokenOptions): Promise<void> {
     console.warn('Linkrunner: setPushToken is not available on web platform', options);
+  }
+
+  async setCustomerUserId(options: SetCustomerUserIdOptions): Promise<void> {
+    console.warn('Linkrunner: setCustomerUserId is not available on web platform', options);
   }
 
   async handleDeeplink(options: HandleDeeplinkOptions): Promise<HandleDeeplinkResult> {
