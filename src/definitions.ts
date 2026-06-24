@@ -146,7 +146,7 @@ export interface SetUserDataOptions {
 export interface CapturePaymentOptions {
   /** Optional payment identifier */
   paymentId?: string;
-  /** Required user identifier */
+  /** Required user identifier; pass "" to fall back to the stored signup user_id */
   userId: string;
   /** Required payment amount */
   amount: number;
@@ -200,6 +200,14 @@ export interface EnablePIIHashingOptions {
 export interface SetPushTokenOptions {
   /** Required push notification token (FCM on Android, APNs on iOS) */
   pushToken: string;
+}
+
+/**
+ * Options for setting the customer user ID
+ */
+export interface SetCustomerUserIdOptions {
+  /** Required customer user ID */
+  userId: string;
 }
 
 /**
@@ -301,6 +309,12 @@ export interface LinkrunnerPlugin {
    * @param options Options containing the push token
    */
   setPushToken(options: SetPushTokenOptions): Promise<void>;
+
+  /**
+   * Set the customer user ID
+   * @param options Options containing the customer user ID
+   */
+  setCustomerUserId(options: SetCustomerUserIdOptions): Promise<void>;
 
   /**
    * Handle a deeplink for re-engagement attribution

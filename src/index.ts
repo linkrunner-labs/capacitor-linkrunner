@@ -172,13 +172,6 @@ class Linkrunner {
       throw new Error(error);
     }
 
-    // Validate required fields (userId, amount)
-    if (!options.userId || options.userId.trim().length === 0) {
-      const error = 'Linkrunner: CapturePayment failed, userId is required';
-      console.error(error);
-      throw new Error(error);
-    }
-
     if (options.amount === undefined || options.amount === null) {
       const error = 'Linkrunner: CapturePayment failed, amount is required';
       console.error(error);
@@ -433,6 +426,25 @@ class Linkrunner {
       console.log('Linkrunner setPushToken successful');
     } catch (error) {
       console.error('Error during Linkrunner setPushToken', error);
+      throw error;
+    }
+  }
+
+  async setCustomerUserId(userId: string): Promise<void> {
+    if (!this.token) {
+      console.error('Linkrunner: Setting customer user ID failed, SDK not initialized');
+      return;
+    }
+
+    if (!userId || userId.trim().length === 0) {
+      throw new Error('Customer user ID cannot be empty');
+    }
+
+    try {
+      await this.plugin.setCustomerUserId({ userId });
+      console.log('Linkrunner setCustomerUserId successful');
+    } catch (error) {
+      console.error('Error during Linkrunner setCustomerUserId', error);
       throw error;
     }
   }
