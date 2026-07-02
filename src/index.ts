@@ -172,7 +172,7 @@ class Linkrunner {
       throw new Error(error);
     }
 
-    if (!options.paymentId) {
+    if (!options.paymentId || options.paymentId.trim().length === 0) {
       const error = 'Linkrunner: CapturePayment failed, paymentId is required';
       console.error(error);
       throw new Error(error);
