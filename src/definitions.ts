@@ -134,8 +134,8 @@ export interface SetUserDataOptions {
  * Options for capturing payment
  */
 export interface CapturePaymentOptions {
-  /** Optional payment identifier */
-  paymentId?: string;
+  /** Required payment identifier */
+  paymentId: string;
   /** Required user identifier; pass "" to fall back to the stored signup user_id */
   userId: string;
   /** Required payment amount */

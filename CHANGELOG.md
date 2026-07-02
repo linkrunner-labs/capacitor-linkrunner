@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.0.0] - 2026-06-30
+
+- **Breaking:** `paymentId` is now required in `capturePayment`; the call throws before dispatch when it is missing
+- Bumped underlying `LinkrunnerKit` (iOS) dependency to `4.0.0`
+- Bumped underlying `io.linkrunner:android-sdk` (Android) dependency to `4.0.0`
+
 ## [1.2.0] - 2026-06-05
 
 - Added `setPushToken` method for registering FCM (Android) and APNs (iOS) push notification tokens

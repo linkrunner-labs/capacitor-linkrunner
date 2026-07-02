@@ -12,7 +12,7 @@ const LinkrunnerPluginInstance = registerPlugin<LinkrunnerPlugin>('Linkrunner', 
 class Linkrunner {
   private token: string | null = null;
   private plugin: LinkrunnerPlugin;
-  private packageVersion: string = '1.2.0';
+  private packageVersion: string = '2.0.0';
 
   constructor() {
     this.plugin = LinkrunnerPluginInstance;
@@ -159,7 +159,7 @@ class Linkrunner {
    * @param options Payment details including user ID, amount, type, and status
    */
   async capturePayment(options: {
-    paymentId?: string;
+    paymentId: string;
     userId: string;
     amount: number;
     type?: PaymentType;
@@ -168,6 +168,12 @@ class Linkrunner {
     // Check initialization state
     if (!this.token) {
       const error = 'Linkrunner: CapturePayment failed, SDK not initialized';
+      console.error(error);
+      throw new Error(error);
+    }
+
+    if (!options.paymentId || options.paymentId.trim().length === 0) {
+      const error = 'Linkrunner: CapturePayment failed, paymentId is required';
       console.error(error);
       throw new Error(error);
     }
