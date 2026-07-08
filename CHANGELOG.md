@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.1.0] - 2026-07-09
+
+- Exposed ad-network attribution fields in `campaign_data`: `adNetworkCampaignId`, `adSetId`, `adSetName`, `adCreativeId`, `adCreativeName`.
+- Bumped underlying `LinkrunnerKit` (iOS) dependency to `4.0.1`
+- Bumped underlying `io.linkrunner:android-sdk` (Android) dependency to `4.0.1`
+
 ## [2.0.0] - 2026-06-30
 
 - **Breaking:** `paymentId` is now required in `capturePayment`; the call throws before dispatch when it is missing
