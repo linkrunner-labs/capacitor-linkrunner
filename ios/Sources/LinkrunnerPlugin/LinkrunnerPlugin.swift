@@ -450,6 +450,21 @@ extension LinkrunnerPlugin {
             if let assetGroupName = campaignData.assetGroupName {
                 campaignDict["assetGroupName"] = assetGroupName
             }
+            if let adNetworkCampaignId = campaignData.adNetworkCampaignId {
+                campaignDict["adNetworkCampaignId"] = adNetworkCampaignId
+            }
+            if let adSetId = campaignData.adSetId {
+                campaignDict["adSetId"] = adSetId
+            }
+            if let adSetName = campaignData.adSetName {
+                campaignDict["adSetName"] = adSetName
+            }
+            if let adCreativeId = campaignData.adCreativeId {
+                campaignDict["adCreativeId"] = adCreativeId
+            }
+            if let adCreativeName = campaignData.adCreativeName {
+                campaignDict["adCreativeName"] = adCreativeName
+            }
             
             // Format dates
             let dateFormatter = ISO8601DateFormatter()

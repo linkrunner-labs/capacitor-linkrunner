@@ -587,6 +587,11 @@ class LinkrunnerPlugin : Plugin() {
         campaignData.put("groupName", attributionData.campaignData.groupName)
         campaignData.put("assetName", attributionData.campaignData.assetName)
         campaignData.put("assetGroupName", attributionData.campaignData.assetGroupName)
+        campaignData.put("adNetworkCampaignId", attributionData.campaignData.adNetworkCampaignId)
+        campaignData.put("adSetId", attributionData.campaignData.adSetId)
+        campaignData.put("adSetName", attributionData.campaignData.adSetName)
+        campaignData.put("adCreativeId", attributionData.campaignData.adCreativeId)
+        campaignData.put("adCreativeName", attributionData.campaignData.adCreativeName)
 
         // Add optional fields
         attributionData.campaignData.adNetwork?.let {

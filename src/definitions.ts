@@ -52,6 +52,16 @@ export interface CampaignData {
   assetName?: string;
   /** Optional asset group name */
   assetGroupName?: string;
+  /** Optional ad network campaign ID */
+  adNetworkCampaignId?: string;
+  /** Optional ad set ID */
+  adSetId?: string;
+  /** Optional ad set name */
+  adSetName?: string;
+  /** Optional ad creative ID */
+  adCreativeId?: string;
+  /** Optional ad creative name */
+  adCreativeName?: string;
 }
 
 /**
