@@ -11,7 +11,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", from: "8.0.0"),
-        .package(url: "https://github.com/linkrunner-labs/linkrunner-ios.git", from: "4.0.0")
+        .package(url: "https://github.com/linkrunner-labs/linkrunner-ios.git", from: "4.0.1")
     ],
     targets: [
         .target(
