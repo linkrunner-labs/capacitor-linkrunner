@@ -1,0 +1,54 @@
+{
+  "sdk": "CAPACITOR",
+  "package": "capacitor-linkrunner",
+  "latest_version": "2.1.0",
+  "total_versions": 8,
+  "source": "version and description from Postgres public.\"SDKVersion\"; pushed_date from the package registry publish date, falling back to CHANGELOG.md, git tags, then manifest history",
+  "version_source": {
+    "file": "package.json",
+    "type": "package_json"
+  },
+  "version_mirrors": [],
+  "sdk_versions": [
+    {
+      "version": "2.1.0",
+      "pushed_date": "2026-07-09",
+      "description": "Expanded attribution responses with ad-network campaign, ad set, and creative IDs and names for campaign-level reporting."
+    },
+    {
+      "version": "2.0.0",
+      "pushed_date": "2026-07-02",
+      "description": "Breaking change: payment capture now requires a non-empty paymentId so every payment can be uniquely identified."
+    },
+    {
+      "version": "1.3.0",
+      "pushed_date": "2026-06-22",
+      "description": "Added setCustomerUserId, which persists the application user ID and automatically includes it with subsequent tracked events."
+    },
+    {
+      "version": "1.2.0",
+      "pushed_date": "2026-06-07",
+      "description": "Added push-token registration for uninstall tracking and handleDeeplink for re-engagement attribution."
+    },
+    {
+      "version": "1.1.0",
+      "pushed_date": "2026-03-21",
+      "description": "Added the Netcore device GUID to user data so Linkrunner users can be matched with Netcore profiles."
+    },
+    {
+      "version": "1.0.1",
+      "pushed_date": "2026-02-19",
+      "description": "Added Google Analytics session ID support and native compatibility and packaging fixes."
+    },
+    {
+      "version": "1.0.0",
+      "pushed_date": "2026-02-19",
+      "description": "Added the core Linkrunner SDK APIs and native Android and iOS bridges."
+    },
+    {
+      "version": "0.0.1",
+      "pushed_date": "2026-01-06",
+      "description": "Initial Capacitor plugin scaffold establishing the package layout and native Android and iOS project structure."
+    }
+  ]
+}
