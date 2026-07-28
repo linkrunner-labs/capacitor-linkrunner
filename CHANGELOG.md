@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.1] - 2026-07-23
+
+- Bumped the native Android SDK to `io.linkrunner:android-sdk:4.0.2` to prevent signup from sending an empty install instance ID when it runs concurrently with initialization.
+
 ## [2.1.0] - 2026-07-09
 
 - Exposed ad-network attribution fields in `campaign_data`: `adNetworkCampaignId`, `adSetId`, `adSetName`, `adCreativeId`, `adCreativeName`.
