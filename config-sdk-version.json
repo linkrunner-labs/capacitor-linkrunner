@@ -1,8 +1,8 @@
 {
   "sdk": "CAPACITOR",
   "package": "capacitor-linkrunner",
-  "latest_version": "2.1.0",
-  "total_versions": 8,
+  "latest_version": "2.1.1",
+  "total_versions": 9,
   "source": "version and description from Postgres public.\"SDKVersion\"; pushed_date from the package registry publish date, falling back to CHANGELOG.md, git tags, then manifest history",
   "version_source": {
     "file": "package.json",
@@ -10,6 +10,11 @@
   },
   "version_mirrors": [],
   "sdk_versions": [
+    {
+      "version": "2.1.1",
+      "pushed_date": "2026-07-23",
+      "description": "Updated the native Android SDK to 4.0.2 so signup no longer sends an empty install instance ID when it runs concurrently with initialization."
+    },
     {
       "version": "2.1.0",
       "pushed_date": "2026-07-09",
