@@ -12,7 +12,7 @@ const LinkrunnerPluginInstance = registerPlugin<LinkrunnerPlugin>('Linkrunner', 
 class Linkrunner {
   private token: string | null = null;
   private plugin: LinkrunnerPlugin;
-  private packageVersion: string = '2.1.1';
+  private packageVersion: string = '2.1.2';
 
   constructor() {
     this.plugin = LinkrunnerPluginInstance;

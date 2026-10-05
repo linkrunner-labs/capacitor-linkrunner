@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.2] - 2026-10-04
+
+- `enablePIIHashing(true)` now hashes `name`, `email` and `phone` on Android. Before, the native Android SDK stored the flag but never applied it, so `signup` and `setUserData` sent those fields in plain text while iOS sent SHA-256 hashes. Android now sends the same lowercase SHA-256 hex as iOS, so the same input gives the same hash on both platforms. Nothing changes when hashing is off.
+- Calling `enablePIIHashing()` before `init()` no longer fails on Android (native SDK used to throw `Context not set`).
+- Bumped the native Android SDK to `io.linkrunner:android-sdk:4.1.1`.
+- Bumped the native iOS SDK to `LinkrunnerKit 4.1.0` (podspec and Package.swift).
+
 ## [2.1.1] - 2026-07-23
 
 - Bumped the native Android SDK to `io.linkrunner:android-sdk:4.0.2` to prevent signup from sending an empty install instance ID when it runs concurrently with initialization.
