@@ -578,6 +578,9 @@ class LinkrunnerPlugin : Plugin() {
             data.put("deeplink", it)
         }
 
+        attributionData.gaid?.let { data.put("gaid", it) }
+        attributionData.idfa?.let { data.put("idfa", it) }
+
         // Convert campaign data
         val campaignData = JSObject()
         campaignData.put("id", attributionData.campaignData.id)

@@ -429,6 +429,13 @@ extension LinkrunnerPlugin {
         if let deeplink = attributionData.deeplink {
             data["deeplink"] = deeplink
         }
+
+        if let gaid = attributionData.gaid {
+            data["gaid"] = gaid
+        }
+        if let idfa = attributionData.idfa {
+            data["idfa"] = idfa
+        }
         
         // Convert campaign data if present
         if let campaignData = attributionData.campaignData {
