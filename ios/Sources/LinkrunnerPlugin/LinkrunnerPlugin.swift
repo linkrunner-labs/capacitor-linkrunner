@@ -130,7 +130,11 @@ public class LinkrunnerPlugin: CAPPlugin, CAPBridgedPlugin {
             return
         }
         
-        let paymentId = call.getString("paymentId")
+        guard let paymentId = call.getString("paymentId"), !paymentId.isEmpty else {
+            call.reject("paymentId is required")
+            return
+        }
+
         let typeStr = call.getString("type") ?? "DEFAULT"
         let statusStr = call.getString("status") ?? "PAYMENT_COMPLETED"
         

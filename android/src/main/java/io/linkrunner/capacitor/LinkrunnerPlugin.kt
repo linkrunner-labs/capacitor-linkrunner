@@ -218,6 +218,11 @@ class LinkrunnerPlugin : Plugin() {
             return
         }
 
+        if (paymentId.isNullOrBlank()) {
+            call.reject("INVALID_PARAMETER", "paymentId is required")
+            return
+        }
+
         try {
             val type = convertToPaymentType(typeStr)
             val status = convertToPaymentStatus(statusStr)
