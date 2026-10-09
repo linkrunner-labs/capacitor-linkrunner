@@ -130,7 +130,11 @@ public class LinkrunnerPlugin: CAPPlugin, CAPBridgedPlugin {
             return
         }
         
-        let paymentId = call.getString("paymentId")
+        guard let paymentId = call.getString("paymentId"), !paymentId.isEmpty else {
+            call.reject("paymentId is required")
+            return
+        }
+
         let typeStr = call.getString("type") ?? "DEFAULT"
         let statusStr = call.getString("status") ?? "PAYMENT_COMPLETED"
         
@@ -428,6 +432,13 @@ extension LinkrunnerPlugin {
         // Add deeplink if present
         if let deeplink = attributionData.deeplink {
             data["deeplink"] = deeplink
+        }
+
+        if let gaid = attributionData.gaid {
+            data["gaid"] = gaid
+        }
+        if let idfa = attributionData.idfa {
+            data["idfa"] = idfa
         }
         
         // Convert campaign data if present

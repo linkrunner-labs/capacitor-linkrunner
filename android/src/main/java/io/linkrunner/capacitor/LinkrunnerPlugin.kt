@@ -218,6 +218,11 @@ class LinkrunnerPlugin : Plugin() {
             return
         }
 
+        if (paymentId.isNullOrBlank()) {
+            call.reject("INVALID_PARAMETER", "paymentId is required")
+            return
+        }
+
         try {
             val type = convertToPaymentType(typeStr)
             val status = convertToPaymentStatus(statusStr)
@@ -577,6 +582,9 @@ class LinkrunnerPlugin : Plugin() {
         attributionData.deeplink?.let {
             data.put("deeplink", it)
         }
+
+        attributionData.gaid?.let { data.put("gaid", it) }
+        attributionData.idfa?.let { data.put("idfa", it) }
 
         // Convert campaign data
         val campaignData = JSObject()
