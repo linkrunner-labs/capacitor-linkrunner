@@ -15,6 +15,7 @@ public class LinkrunnerPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "signup", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setUserData", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "trackEvent", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "trackPayment", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getAttributionData", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setAdditionalData", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "enablePIIHashing", returnType: CAPPluginReturnPromise),
@@ -155,6 +156,46 @@ public class LinkrunnerPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
     
+    /**
+     * Track a payment as an event
+     */
+    @objc func trackPayment(_ call: CAPPluginCall) {
+        guard let eventName = call.getString("eventName"), !eventName.isEmpty else {
+            call.reject("eventName is required")
+            return
+        }
+
+        let eventData = call.getObject("eventData")
+        let eventDataDict = eventData != nil ? convertJSObjectToDict(eventData!) : nil
+        let eventId = call.getString("eventId")
+
+        let payment: EventPayment
+        do {
+            payment = try convertToEventPayment(call.jsObjectRepresentation, prefix: "")
+        } catch {
+            call.reject(error.localizedDescription)
+            return
+        }
+
+        Task {
+            if #available(iOS 15.0, *) {
+                await linkrunner.trackPayment(
+                    eventName: eventName,
+                    paymentId: payment.paymentId,
+                    userId: payment.userId,
+                    amount: payment.amount,
+                    currency: payment.currency,
+                    status: payment.status,
+                    eventData: eventDataDict,
+                    eventId: eventId
+                )
+                call.resolve()
+            } else {
+                call.reject("iOS 15.0 or later is required")
+            }
+        }
+    }
+
     /**
      * Get attribution data
      */
@@ -322,19 +363,21 @@ extension LinkrunnerPlugin {
     }
     
     /**
-     * Convert the JS payment object to a native EventPayment
+     * Convert a JS payment object to a native EventPayment
      */
-    private func convertToEventPayment(_ jsObject: JSObject) throws -> EventPayment {
+    private func convertToEventPayment(_ jsObject: JSObject, prefix: String = "payment.") throws -> EventPayment {
         guard let amount = (jsObject["amount"] as? NSNumber)?.doubleValue else {
-            throw paymentError("payment.amount is required")
+            throw paymentError("\(prefix)amount is required")
         }
         guard let paymentId = jsObject["paymentId"] as? String else {
-            throw paymentError("payment.paymentId is required")
+            throw paymentError("\(prefix)paymentId is required")
         }
         guard let currency = jsObject["currency"] as? String else {
-            throw paymentError("payment.currency is required")
+            throw paymentError("\(prefix)currency is required")
         }
-        var status: PaymentStatus?
+        // A blank userId makes the native SDK fall back to the stored signup user id
+        let userId = jsObject["userId"] as? String ?? ""
+        var status: PaymentStatus = .completed
         if let statusStr = jsObject["status"] as? String, !statusStr.isEmpty {
             guard let parsed = PaymentStatus(rawValue: statusStr.uppercased()) else {
                 throw paymentError("invalid payment status: \(statusStr)")
@@ -342,13 +385,13 @@ extension LinkrunnerPlugin {
             status = parsed
         }
         do {
-            return try EventPayment(amount: amount, paymentId: paymentId, currency: currency, status: status)
+            return try EventPayment(amount: amount, paymentId: paymentId, currency: currency, userId: userId, status: status)
         } catch EventPaymentError.invalidAmount {
-            throw paymentError("payment.amount must be a finite number >= 0")
+            throw paymentError("\(prefix)amount must be a finite number >= 0")
         } catch EventPaymentError.invalidPaymentId {
-            throw paymentError("payment.paymentId is required")
+            throw paymentError("\(prefix)paymentId is required")
         } catch EventPaymentError.invalidCurrency {
-            throw paymentError("payment.currency must be a 3-letter ISO 4217 code")
+            throw paymentError("\(prefix)currency must be a 3-letter ISO 4217 code")
         }
     }
 

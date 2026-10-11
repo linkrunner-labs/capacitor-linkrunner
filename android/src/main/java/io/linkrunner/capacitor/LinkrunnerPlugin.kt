@@ -212,24 +212,26 @@ class LinkrunnerPlugin : Plugin() {
     }
 
     /**
-     * Convert the JS payment object to a native EventPayment, throwing IllegalArgumentException when invalid
+     * Convert a JS payment object to a native EventPayment, throwing IllegalArgumentException when invalid
      */
-    private fun convertToEventPayment(paymentObj: JSObject): EventPayment {
+    private fun convertToEventPayment(paymentObj: JSObject, prefix: String = "payment."): EventPayment {
         val amountValue = paymentObj.opt("amount")
         if (amountValue !is Number) {
-            throw IllegalArgumentException("payment.amount is required")
+            throw IllegalArgumentException("${prefix}amount is required")
         }
         val paymentId = paymentObj.getString("paymentId")
         if (paymentId.isNullOrBlank()) {
-            throw IllegalArgumentException("payment.paymentId is required")
+            throw IllegalArgumentException("${prefix}paymentId is required")
         }
         val currency = paymentObj.getString("currency")
         if (currency.isNullOrBlank()) {
-            throw IllegalArgumentException("payment.currency is required")
+            throw IllegalArgumentException("${prefix}currency is required")
         }
+        // A blank userId makes the native SDK fall back to the stored signup user id
+        val userId = paymentObj.getString("userId") ?: ""
         val statusStr = paymentObj.getString("status")
         val status = if (statusStr.isNullOrBlank()) {
-            null
+            PaymentStatus.PAYMENT_COMPLETED
         } else {
             convertToPaymentStatus(statusStr)
                 ?: throw IllegalArgumentException("invalid payment status: $statusStr")
@@ -238,6 +240,7 @@ class LinkrunnerPlugin : Plugin() {
             amount = amountValue.toDouble(),
             paymentId = paymentId,
             currency = currency,
+            userId = userId,
             status = status
         )
     }
@@ -285,6 +288,61 @@ class LinkrunnerPlugin : Plugin() {
                 } catch (e: Exception) {
                     Log.e(TAG, "TrackEvent failed", e)
                     call.reject("TRACK_EVENT_FAILED", e.message ?: "TrackEvent failed")
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to convert event data", e)
+            call.reject("DATA_CONVERSION_FAILED", e.message ?: "Failed to convert event data")
+        }
+    }
+
+    /**
+     * Track a payment as an event
+     */
+    @PluginMethod
+    fun trackPayment(call: PluginCall) {
+        val eventName = call.getString("eventName")
+        val eventData = call.getObject("eventData")
+        val eventId = call.getString("eventId")
+
+        if (eventName.isNullOrBlank()) {
+            call.reject("INVALID_PARAMETER", "eventName is required")
+            return
+        }
+
+        val payment = try {
+            convertToEventPayment(call.data, prefix = "")
+        } catch (e: IllegalArgumentException) {
+            call.reject("INVALID_PARAMETER", e.message ?: "Invalid payment")
+            return
+        }
+
+        try {
+            val eventDataMap = eventData?.let { convertJSObjectToMap(it) }
+
+            coroutineScope.launch {
+                try {
+                    val result = linkrunner.trackPayment(
+                        eventName = eventName,
+                        paymentId = payment.paymentId,
+                        userId = payment.userId,
+                        amount = payment.amount,
+                        currency = payment.currency,
+                        status = payment.status,
+                        eventData = eventDataMap,
+                        eventId = eventId
+                    )
+
+                    if (result.isSuccess) {
+                        call.resolve()
+                    } else {
+                        val exception = result.exceptionOrNull()
+                        Log.e(TAG, "TrackPayment failed", exception)
+                        call.reject("TRACK_PAYMENT_FAILED", exception?.message ?: "TrackPayment failed")
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "TrackPayment failed", e)
+                    call.reject("TRACK_PAYMENT_FAILED", e.message ?: "TrackPayment failed")
                 }
             }
         } catch (e: Exception) {

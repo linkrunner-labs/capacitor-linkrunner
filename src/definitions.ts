@@ -141,8 +141,32 @@ export interface EventPayment {
   paymentId: string;
   /** Required 3-letter ISO 4217 currency code, e.g. 'USD' */
   currency: string;
-  /** Optional payment status */
+  /** Required user identifier; pass '' to fall back to the stored signup user id */
+  userId: string;
+  /** Optional payment status (defaults to 'PAYMENT_COMPLETED') */
   status?: PaymentStatus;
+}
+
+/**
+ * Options for tracking a payment; the event name becomes the payment type
+ */
+export interface TrackPaymentOptions {
+  /** Required event name, stored as the payment type */
+  eventName: string;
+  /** Required payment identifier */
+  paymentId: string;
+  /** Required user identifier; pass '' to fall back to the stored signup user id */
+  userId: string;
+  /** Required payment amount, a finite number >= 0 */
+  amount: number;
+  /** Required 3-letter ISO 4217 currency code, e.g. 'USD' */
+  currency: string;
+  /** Optional payment status (defaults to 'PAYMENT_COMPLETED') */
+  status?: PaymentStatus;
+  /** Optional event data */
+  eventData?: Record<string, any>;
+  /** Optional event identifier */
+  eventId?: string;
 }
 
 /**
@@ -254,6 +278,12 @@ export interface LinkrunnerPlugin {
    * @param options Event details including name, data, optional ID and optional payment
    */
   trackEvent(options: TrackEventOptions): Promise<void>;
+
+  /**
+   * Track a payment as an event
+   * @param options Payment details including event name, payment ID, user ID, amount and currency
+   */
+  trackPayment(options: TrackPaymentOptions): Promise<void>;
 
   /**
    * Retrieve attribution data

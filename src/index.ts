@@ -14,23 +14,56 @@ const CURRENCY_CODE_PATTERN = /^[A-Za-z]{3}$/;
 /**
  * Returns why a payment is invalid, or null when it can be sent
  */
-function validateEventPayment(payment: EventPayment): string | null {
+function validateEventPayment(payment: EventPayment, prefix: string): string | null {
   if (payment === null || typeof payment !== 'object') {
     return 'payment must be an object';
   }
   if (typeof payment.amount !== 'number' || !Number.isFinite(payment.amount) || payment.amount < 0) {
-    return 'payment.amount must be a finite number >= 0';
+    return `${prefix}amount must be a finite number >= 0`;
   }
   if (typeof payment.paymentId !== 'string' || payment.paymentId.trim().length === 0) {
-    return 'payment.paymentId is required';
+    return `${prefix}paymentId is required`;
   }
   if (typeof payment.currency !== 'string' || !CURRENCY_CODE_PATTERN.test(payment.currency.trim())) {
-    return 'payment.currency must be a 3-letter ISO 4217 code';
+    return `${prefix}currency must be a 3-letter ISO 4217 code`;
+  }
+  if (typeof payment.userId !== 'string') {
+    return `${prefix}userId must be a string`;
   }
   if (payment.status !== undefined && payment.status !== null && !VALID_PAYMENT_STATUSES.includes(payment.status)) {
     return `invalid payment status: ${payment.status}`;
   }
   return null;
+}
+
+/**
+ * Builds the payment sent to native code; a blank userId falls back to the stored signup user id
+ */
+function normalizeEventPayment(payment: EventPayment): Required<EventPayment> {
+  return {
+    amount: payment.amount,
+    paymentId: payment.paymentId,
+    currency: payment.currency.trim().toUpperCase(),
+    userId: payment.userId,
+    status: payment.status || 'PAYMENT_COMPLETED',
+  };
+}
+
+/**
+ * Converts a string or number event id to a string, ignoring other types
+ */
+function processEventId(eventId: string | number | undefined, method: string): string | undefined {
+  if (eventId === undefined || eventId === null) {
+    return undefined;
+  }
+  if (typeof eventId === 'number') {
+    return eventId.toString();
+  }
+  if (typeof eventId === 'string') {
+    return eventId;
+  }
+  console.warn(`Linkrunner: ${method} warning, eventId has invalid type (${typeof eventId}), ignoring eventId`);
+  return undefined;
 }
 
 const LinkrunnerPluginInstance = registerPlugin<LinkrunnerPlugin>('Linkrunner', {
@@ -212,35 +245,17 @@ class Linkrunner {
       throw new Error(error);
     }
 
-    // Process eventId
-    let processedEventId: string | undefined;
-    if (eventId !== undefined && eventId !== null) {
-      // Convert eventId to string if it's a number
-      if (typeof eventId === 'number') {
-        processedEventId = eventId.toString();
-      } else if (typeof eventId === 'string') {
-        processedEventId = eventId;
-      } else {
-        // Log warning and ignore eventId if invalid type
-        console.warn(`Linkrunner: TrackEvent warning, eventId has invalid type (${typeof eventId}), ignoring eventId`);
-        processedEventId = undefined;
-      }
-    }
+    const processedEventId = processEventId(eventId, 'TrackEvent');
 
     let processedPayment: EventPayment | undefined;
     if (payment !== undefined && payment !== null) {
-      const paymentError = validateEventPayment(payment);
+      const paymentError = validateEventPayment(payment, 'payment.');
       if (paymentError) {
         const error = `Linkrunner: TrackEvent failed, ${paymentError}`;
         console.error(error);
         throw new Error(error);
       }
-      processedPayment = {
-        amount: payment.amount,
-        paymentId: payment.paymentId,
-        currency: payment.currency.trim().toUpperCase(),
-        ...(payment.status ? { status: payment.status } : {}),
-      };
+      processedPayment = normalizeEventPayment(payment);
     }
 
     try {
@@ -256,6 +271,62 @@ class Linkrunner {
       console.log('Linkrunner trackEvent successful');
     } catch (error) {
       console.error('Error during Linkrunner trackEvent', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Track a payment; the event name becomes the payment type
+   * @param options Payment details: eventName, paymentId, userId, amount and currency are required, status defaults to 'PAYMENT_COMPLETED'
+   */
+  async trackPayment(options: {
+    eventName: string;
+    paymentId: string;
+    userId: string;
+    amount: number;
+    currency: string;
+    status?: PaymentStatus;
+    eventData?: Record<string, any>;
+    eventId?: string | number;
+  }): Promise<void> {
+    if (!this.token) {
+      const error = 'Linkrunner: TrackPayment failed, SDK not initialized';
+      console.error(error);
+      throw new Error(error);
+    }
+
+    if (!options || typeof options !== 'object') {
+      const error = 'Linkrunner: TrackPayment failed, options are required';
+      console.error(error);
+      throw new Error(error);
+    }
+
+    if (typeof options.eventName !== 'string' || options.eventName.trim().length === 0) {
+      const error = 'Linkrunner: TrackPayment failed, eventName is required';
+      console.error(error);
+      throw new Error(error);
+    }
+
+    const paymentError = validateEventPayment(options, '');
+    if (paymentError) {
+      const error = `Linkrunner: TrackPayment failed, ${paymentError}`;
+      console.error(error);
+      throw new Error(error);
+    }
+
+    const payment = normalizeEventPayment(options);
+
+    try {
+      await this.plugin.trackPayment({
+        eventName: options.eventName,
+        ...payment,
+        eventData: options.eventData,
+        eventId: processEventId(options.eventId, 'TrackPayment'),
+      });
+
+      console.log('Linkrunner trackPayment successful');
+    } catch (error) {
+      console.error('Error during Linkrunner trackPayment', error);
       throw error;
     }
   }
