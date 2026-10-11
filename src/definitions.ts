@@ -87,19 +87,6 @@ export interface IntegrationData {
 }
 
 /**
- * Payment type enumeration
- */
-export type PaymentType =
-  | 'FIRST_PAYMENT'
-  | 'WALLET_TOPUP'
-  | 'FUNDS_WITHDRAWAL'
-  | 'SUBSCRIPTION_CREATED'
-  | 'SUBSCRIPTION_RENEWED'
-  | 'DEFAULT'
-  | 'ONE_TIME'
-  | 'RECURRING';
-
-/**
  * Payment status enumeration
  */
 export type PaymentStatus =
@@ -145,29 +132,17 @@ export interface SetUserDataOptions {
 }
 
 /**
- * Options for capturing payment
+ * Revenue attached to a tracked event; the event name becomes the payment type
  */
-export interface CapturePaymentOptions {
+export interface EventPayment {
+  /** Required payment amount, a finite number >= 0 */
+  amount: number;
   /** Required payment identifier */
   paymentId: string;
-  /** Required user identifier; pass "" to fall back to the stored signup user_id */
-  userId: string;
-  /** Required payment amount */
-  amount: number;
-  /** Optional payment type (defaults to 'DEFAULT') */
-  type?: PaymentType;
-  /** Optional payment status (defaults to 'PAYMENT_COMPLETED') */
+  /** Required 3-letter ISO 4217 currency code, e.g. 'USD' */
+  currency: string;
+  /** Optional payment status */
   status?: PaymentStatus;
-}
-
-/**
- * Options for removing payment
- */
-export interface RemovePaymentOptions {
-  /** Optional payment identifier */
-  paymentId?: string;
-  /** Required user identifier */
-  userId: string;
 }
 
 /**
@@ -180,6 +155,8 @@ export interface TrackEventOptions {
   eventData?: Record<string, any>;
   /** Optional event identifier (string or number) */
   eventId?: string;
+  /** Optional payment recorded with this event */
+  payment?: EventPayment;
 }
 
 /**
@@ -273,20 +250,8 @@ export interface LinkrunnerPlugin {
   setUserData(options: SetUserDataOptions): Promise<void>;
 
   /**
-   * Capture a payment event
-   * @param options Payment details including user ID, amount, type, and status
-   */
-  capturePayment(options: CapturePaymentOptions): Promise<void>;
-
-  /**
-   * Remove or refund a payment
-   * @param options Payment removal details including user ID and optional payment ID
-   */
-  removePayment(options: RemovePaymentOptions): Promise<void>;
-
-  /**
-   * Track a custom event
-   * @param options Event details including name, data, and optional ID
+   * Track a custom event, optionally with a payment
+   * @param options Event details including name, data, optional ID and optional payment
    */
   trackEvent(options: TrackEventOptions): Promise<void>;
 

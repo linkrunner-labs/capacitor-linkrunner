@@ -1,6 +1,37 @@
 import { registerPlugin } from '@capacitor/core';
 
-import type { LinkrunnerPlugin, UserData, AttributionData, DeeplinkData, IntegrationData, PaymentType, PaymentStatus } from './definitions';
+import type { LinkrunnerPlugin, UserData, AttributionData, DeeplinkData, IntegrationData, EventPayment, PaymentStatus } from './definitions';
+
+const VALID_PAYMENT_STATUSES: PaymentStatus[] = [
+  'PAYMENT_INITIATED',
+  'PAYMENT_COMPLETED',
+  'PAYMENT_FAILED',
+  'PAYMENT_CANCELLED',
+];
+
+const CURRENCY_CODE_PATTERN = /^[A-Za-z]{3}$/;
+
+/**
+ * Returns why a payment is invalid, or null when it can be sent
+ */
+function validateEventPayment(payment: EventPayment): string | null {
+  if (payment === null || typeof payment !== 'object') {
+    return 'payment must be an object';
+  }
+  if (typeof payment.amount !== 'number' || !Number.isFinite(payment.amount) || payment.amount < 0) {
+    return 'payment.amount must be a finite number >= 0';
+  }
+  if (typeof payment.paymentId !== 'string' || payment.paymentId.trim().length === 0) {
+    return 'payment.paymentId is required';
+  }
+  if (typeof payment.currency !== 'string' || !CURRENCY_CODE_PATTERN.test(payment.currency.trim())) {
+    return 'payment.currency must be a 3-letter ISO 4217 code';
+  }
+  if (payment.status !== undefined && payment.status !== null && !VALID_PAYMENT_STATUSES.includes(payment.status)) {
+    return `invalid payment status: ${payment.status}`;
+  }
+  return null;
+}
 
 const LinkrunnerPluginInstance = registerPlugin<LinkrunnerPlugin>('Linkrunner', {
   web: () => import('./web').then((m) => new m.LinkrunnerWeb()),
@@ -12,7 +43,7 @@ const LinkrunnerPluginInstance = registerPlugin<LinkrunnerPlugin>('Linkrunner', 
 class Linkrunner {
   private token: string | null = null;
   private plugin: LinkrunnerPlugin;
-  private packageVersion: string = '2.2.0';
+  private packageVersion: string = '3.0.0';
 
   constructor() {
     this.plugin = LinkrunnerPluginInstance;
@@ -155,134 +186,17 @@ class Linkrunner {
   }
 
   /**
-   * Capture a payment event
-   * @param options Payment details including user ID, amount, type, and status
-   */
-  async capturePayment(options: {
-    paymentId: string;
-    userId: string;
-    amount: number;
-    type?: PaymentType;
-    status?: PaymentStatus;
-  }): Promise<void> {
-    // Check initialization state
-    if (!this.token) {
-      const error = 'Linkrunner: CapturePayment failed, SDK not initialized';
-      console.error(error);
-      throw new Error(error);
-    }
-
-    if (!options.paymentId || options.paymentId.trim().length === 0) {
-      const error = 'Linkrunner: CapturePayment failed, paymentId is required';
-      console.error(error);
-      throw new Error(error);
-    }
-
-    if (options.amount === undefined || options.amount === null) {
-      const error = 'Linkrunner: CapturePayment failed, amount is required';
-      console.error(error);
-      throw new Error(error);
-    }
-
-    // Apply defaults: type='DEFAULT', status='PAYMENT_COMPLETED'
-    const type = options.type || 'DEFAULT';
-    const status = options.status || 'PAYMENT_COMPLETED';
-
-    // Validate enum values for type
-    const validTypes: PaymentType[] = [
-      'FIRST_PAYMENT',
-      'WALLET_TOPUP',
-      'FUNDS_WITHDRAWAL',
-      'SUBSCRIPTION_CREATED',
-      'SUBSCRIPTION_RENEWED',
-      'DEFAULT',
-      'ONE_TIME',
-      'RECURRING',
-    ];
-    if (!validTypes.includes(type)) {
-      const error = `Linkrunner: CapturePayment failed, invalid payment type: ${type}`;
-      console.error(error);
-      throw new Error(error);
-    }
-
-    // Validate enum values for status
-    const validStatuses: PaymentStatus[] = [
-      'PAYMENT_INITIATED',
-      'PAYMENT_COMPLETED',
-      'PAYMENT_FAILED',
-      'PAYMENT_CANCELLED',
-    ];
-    if (!validStatuses.includes(status)) {
-      const error = `Linkrunner: CapturePayment failed, invalid payment status: ${status}`;
-      console.error(error);
-      throw new Error(error);
-    }
-
-    try {
-      // Pass payment data to native plugin
-      await this.plugin.capturePayment({
-        paymentId: options.paymentId,
-        userId: options.userId,
-        amount: options.amount,
-        type,
-        status,
-      });
-
-      // Add debug logging
-      console.log('Linkrunner capturePayment successful');
-    } catch (error) {
-      console.error('Error during Linkrunner capturePayment', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Remove or refund a payment
-   * @param options Payment removal details including user ID and optional payment ID
-   */
-  async removePayment(options: {
-    paymentId?: string;
-    userId: string;
-  }): Promise<void> {
-    // Check initialization state
-    if (!this.token) {
-      const error = 'Linkrunner: RemovePayment failed, SDK not initialized';
-      console.error(error);
-      throw new Error(error);
-    }
-
-    // Validate required userId field
-    if (!options.userId || options.userId.trim().length === 0) {
-      const error = 'Linkrunner: RemovePayment failed, userId is required';
-      console.error(error);
-      throw new Error(error);
-    }
-
-    try {
-      // Pass payment removal data to native plugin
-      await this.plugin.removePayment({
-        paymentId: options.paymentId,
-        userId: options.userId,
-      });
-
-      // Add debug logging
-      console.log('Linkrunner removePayment successful');
-    } catch (error) {
-      console.error('Error during Linkrunner removePayment', error);
-      throw error;
-    }
-  }
-
-  /**
    * Track a custom event
    * @param eventName Required event name
    * @param eventData Optional event data
    * @param eventId Optional event identifier (string or number)
+   * @param payment Optional payment recorded with this event; the event name becomes the payment type
    */
   async trackEvent(
     eventName: string,
     eventData?: Record<string, any>,
-    eventId?: string | number
+    eventId?: string | number,
+    payment?: EventPayment
   ): Promise<void> {
     // Check initialization state
     if (!this.token) {
@@ -313,12 +227,29 @@ class Linkrunner {
       }
     }
 
+    let processedPayment: EventPayment | undefined;
+    if (payment !== undefined && payment !== null) {
+      const paymentError = validateEventPayment(payment);
+      if (paymentError) {
+        const error = `Linkrunner: TrackEvent failed, ${paymentError}`;
+        console.error(error);
+        throw new Error(error);
+      }
+      processedPayment = {
+        amount: payment.amount,
+        paymentId: payment.paymentId,
+        currency: payment.currency.trim().toUpperCase(),
+        ...(payment.status ? { status: payment.status } : {}),
+      };
+    }
+
     try {
       // Pass event data to native plugin
       await this.plugin.trackEvent({
         eventName,
         eventData,
         eventId: processedEventId,
+        ...(processedPayment ? { payment: processedPayment } : {}),
       });
 
       // Add debug logging

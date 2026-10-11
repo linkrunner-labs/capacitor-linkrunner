@@ -14,8 +14,6 @@ public class LinkrunnerPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "init", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "signup", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setUserData", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "capturePayment", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "removePayment", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "trackEvent", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getAttributionData", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setAdditionalData", returnType: CAPPluginReturnPromise),
@@ -117,67 +115,6 @@ public class LinkrunnerPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
     
-    // MARK: - Payment Tracking
-    
-    /**
-     * Capture a payment event
-     */
-    @objc func capturePayment(_ call: CAPPluginCall) {
-        let userId = call.getString("userId") ?? ""
-
-        guard let amount = call.getDouble("amount") else {
-            call.reject("amount is required")
-            return
-        }
-        
-        guard let paymentId = call.getString("paymentId"), !paymentId.isEmpty else {
-            call.reject("paymentId is required")
-            return
-        }
-
-        let typeStr = call.getString("type") ?? "DEFAULT"
-        let statusStr = call.getString("status") ?? "PAYMENT_COMPLETED"
-        
-        let type = convertToPaymentType(typeStr)
-        let status = convertToPaymentStatus(statusStr)
-        
-        Task {
-            if #available(iOS 15.0, *) {
-                await linkrunner.capturePayment(
-                    amount: amount,
-                    userId: userId,
-                    paymentId: paymentId,
-                    type: type,
-                    status: status
-                )
-                call.resolve()
-            } else {
-                call.reject("iOS 15.0 or later is required")
-            }
-        }
-    }
-    
-    /**
-     * Remove a payment event
-     */
-    @objc func removePayment(_ call: CAPPluginCall) {
-        guard let userId = call.getString("userId"), !userId.isEmpty else {
-            call.reject("userId is required")
-            return
-        }
-        
-        let paymentId = call.getString("paymentId")
-        
-        Task {
-            if #available(iOS 15.0, *) {
-                await linkrunner.removePayment(userId: userId, paymentId: paymentId)
-                call.resolve()
-            } else {
-                call.reject("iOS 15.0 or later is required")
-            }
-        }
-    }
-    
     // MARK: - Event Tracking and Attribution
     
     /**
@@ -192,13 +129,24 @@ public class LinkrunnerPlugin: CAPPlugin, CAPBridgedPlugin {
         let eventData = call.getObject("eventData")
         let eventDataDict = eventData != nil ? convertJSObjectToDict(eventData!) : nil
         let eventId = call.getString("eventId")
-        
+
+        var payment: EventPayment?
+        if let paymentObj = call.getObject("payment") {
+            do {
+                payment = try convertToEventPayment(paymentObj)
+            } catch {
+                call.reject(error.localizedDescription)
+                return
+            }
+        }
+
         Task {
             if #available(iOS 15.0, *) {
                 await linkrunner.trackEvent(
                     eventName: eventName,
                     eventData: eventDataDict,
-                    eventId: eventId
+                    eventId: eventId,
+                    payment: payment
                 )
                 call.resolve()
             } else {
@@ -374,45 +322,40 @@ extension LinkrunnerPlugin {
     }
     
     /**
-     * Convert string to PaymentType enum
+     * Convert the JS payment object to a native EventPayment
      */
-    private func convertToPaymentType(_ typeStr: String) -> PaymentType {
-        switch typeStr.uppercased() {
-        case "FIRST_PAYMENT":
-            return .firstPayment
-        case "WALLET_TOPUP":
-            return .walletTopup
-        case "FUNDS_WITHDRAWAL":
-            return .fundsWithdrawal
-        case "SUBSCRIPTION_CREATED":
-            return .subscriptionCreated
-        case "SUBSCRIPTION_RENEWED":
-            return .subscriptionRenewed
-        case "ONE_TIME":
-            return .oneTime
-        case "RECURRING":
-            return .recurring
-        default:
-            return .default
+    private func convertToEventPayment(_ jsObject: JSObject) throws -> EventPayment {
+        guard let amount = (jsObject["amount"] as? NSNumber)?.doubleValue else {
+            throw paymentError("payment.amount is required")
+        }
+        guard let paymentId = jsObject["paymentId"] as? String else {
+            throw paymentError("payment.paymentId is required")
+        }
+        guard let currency = jsObject["currency"] as? String else {
+            throw paymentError("payment.currency is required")
+        }
+        var status: PaymentStatus?
+        if let statusStr = jsObject["status"] as? String, !statusStr.isEmpty {
+            guard let parsed = PaymentStatus(rawValue: statusStr.uppercased()) else {
+                throw paymentError("invalid payment status: \(statusStr)")
+            }
+            status = parsed
+        }
+        do {
+            return try EventPayment(amount: amount, paymentId: paymentId, currency: currency, status: status)
+        } catch EventPaymentError.invalidAmount {
+            throw paymentError("payment.amount must be a finite number >= 0")
+        } catch EventPaymentError.invalidPaymentId {
+            throw paymentError("payment.paymentId is required")
+        } catch EventPaymentError.invalidCurrency {
+            throw paymentError("payment.currency must be a 3-letter ISO 4217 code")
         }
     }
-    
-    /**
-     * Convert string to PaymentStatus enum
-     */
-    private func convertToPaymentStatus(_ statusStr: String) -> PaymentStatus {
-        switch statusStr.uppercased() {
-        case "PAYMENT_INITIATED":
-            return .initiated
-        case "PAYMENT_FAILED":
-            return .failed
-        case "PAYMENT_CANCELLED":
-            return .cancelled
-        default:
-            return .completed
-        }
+
+    private func paymentError(_ message: String) -> NSError {
+        return NSError(domain: "LinkrunnerPlugin", code: 2, userInfo: [NSLocalizedDescriptionKey: message])
     }
-    
+
     /**
      * Convert JSObject to IntegrationData
      */

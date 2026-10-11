@@ -1,5 +1,46 @@
 # Changelog
 
+## [3.0.0] - Unreleased
+
+### Added
+
+- `trackEvent` takes an optional 4th argument `payment: { amount, paymentId, currency, status? }`. The payment is stored with the event, and the event name becomes the payment type. `amount` must be a finite number >= 0, `paymentId` must not be empty and `currency` must be a 3-letter ISO 4217 code; the call throws before dispatch otherwise. Calls without a payment work exactly as before.
+- New `EventPayment` type.
+- Bumped the native Android SDK to `io.linkrunner:android-sdk:5.0.0`.
+- Bumped the native iOS SDK to `LinkrunnerKit 5.0.0` (podspec and Package.swift).
+
+### Removed
+
+- **Breaking:** `capturePayment` and `removePayment`. Send payments with `trackEvent` instead.
+- **Breaking:** the `PaymentType` type and the `CapturePaymentOptions` / `RemovePaymentOptions` interfaces. `PaymentStatus` stays.
+
+### Migration
+
+Before:
+
+```ts
+await linkrunner.capturePayment({
+  paymentId: 'order_123',
+  userId: 'user_1',
+  amount: 499,
+  type: 'FIRST_PAYMENT',
+  status: 'PAYMENT_COMPLETED',
+});
+```
+
+After:
+
+```ts
+await linkrunner.trackEvent('first_payment', { plan: 'pro' }, undefined, {
+  amount: 499,
+  paymentId: 'order_123',
+  currency: 'INR',
+  status: 'PAYMENT_COMPLETED',
+});
+```
+
+The event name replaces `type`, and `currency` is now required. There is no replacement for `removePayment`.
+
 ## [2.2.0] - 2026-10-08
 
 - `getAttributionData()` now returns `gaid` and `idfa` in `data`: the advertising identifiers Linkrunner recorded the install with. Use them to join Linkrunner attribution with your own data instead of reading the identifier again on the device. Each is a string when available and absent otherwise. `gaid` is only set on Android and `idfa` only on iOS (when App Tracking Transparency is authorized).

@@ -5,8 +5,6 @@ import type {
   InitOptions,
   SignupOptions,
   SetUserDataOptions,
-  CapturePaymentOptions,
-  RemovePaymentOptions,
   TrackEventOptions,
   SetAdditionalDataOptions,
   EnablePIIHashingOptions,
@@ -28,14 +26,6 @@ export class LinkrunnerWeb extends WebPlugin implements LinkrunnerPlugin {
 
   async setUserData(options: SetUserDataOptions): Promise<void> {
     console.warn('Linkrunner: setUserData is not available on web platform', options);
-  }
-
-  async capturePayment(options: CapturePaymentOptions): Promise<void> {
-    console.warn('Linkrunner: capturePayment is not available on web platform', options);
-  }
-
-  async removePayment(options: RemovePaymentOptions): Promise<void> {
-    console.warn('Linkrunner: removePayment is not available on web platform', options);
   }
 
   async trackEvent(options: TrackEventOptions): Promise<void> {

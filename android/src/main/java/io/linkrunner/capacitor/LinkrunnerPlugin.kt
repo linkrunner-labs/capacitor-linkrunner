@@ -7,6 +7,8 @@ import com.getcapacitor.PluginCall
 import com.getcapacitor.PluginMethod
 import com.getcapacitor.annotation.CapacitorPlugin
 import io.linkrunner.sdk.LinkRunner
+import io.linkrunner.sdk.models.EventPayment
+import io.linkrunner.sdk.models.PaymentStatus
 import io.linkrunner.sdk.models.request.UserDataRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -203,127 +205,41 @@ class LinkrunnerPlugin : Plugin() {
     }
 
     /**
-     * Capture a payment event
+     * Convert string to PaymentStatus enum, null when the status is unknown
      */
-    @PluginMethod
-    fun capturePayment(call: PluginCall) {
-        val userId = call.getString("userId") ?: ""
-        val amount = call.getDouble("amount")
-        val paymentId = call.getString("paymentId")
-        val typeStr = call.getString("type", "DEFAULT")
-        val statusStr = call.getString("status", "PAYMENT_COMPLETED")
+    private fun convertToPaymentStatus(statusStr: String): PaymentStatus? {
+        return PaymentStatus.values().firstOrNull { it.name == statusStr.uppercase() }
+    }
 
-        if (amount == null) {
-            call.reject("INVALID_PARAMETER", "amount is required")
-            return
+    /**
+     * Convert the JS payment object to a native EventPayment, throwing IllegalArgumentException when invalid
+     */
+    private fun convertToEventPayment(paymentObj: JSObject): EventPayment {
+        val amountValue = paymentObj.opt("amount")
+        if (amountValue !is Number) {
+            throw IllegalArgumentException("payment.amount is required")
         }
-
+        val paymentId = paymentObj.getString("paymentId")
         if (paymentId.isNullOrBlank()) {
-            call.reject("INVALID_PARAMETER", "paymentId is required")
-            return
+            throw IllegalArgumentException("payment.paymentId is required")
         }
-
-        try {
-            val type = convertToPaymentType(typeStr)
-            val status = convertToPaymentStatus(statusStr)
-
-            val paymentRequest = io.linkrunner.sdk.models.request.CapturePaymentRequest(
-                paymentId = paymentId,
-                userId = userId,
-                amount = amount,
-                type = type,
-                status = status
-            )
-
-            coroutineScope.launch {
-                try {
-                    val result = linkrunner.capturePayment(paymentRequest)
-
-                    if (result.isSuccess) {
-                        call.resolve()
-                    } else {
-                        val exception = result.exceptionOrNull()
-                        Log.e(TAG, "CapturePayment failed", exception)
-                        call.reject("CAPTURE_PAYMENT_FAILED", exception?.message ?: "CapturePayment failed")
-                    }
-                } catch (e: Exception) {
-                    Log.e(TAG, "CapturePayment failed", e)
-                    call.reject("CAPTURE_PAYMENT_FAILED", e.message ?: "CapturePayment failed")
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to convert payment data", e)
-            call.reject("DATA_CONVERSION_FAILED", e.message ?: "Failed to convert payment data")
+        val currency = paymentObj.getString("currency")
+        if (currency.isNullOrBlank()) {
+            throw IllegalArgumentException("payment.currency is required")
         }
-    }
-
-    /**
-     * Remove a payment event
-     */
-    @PluginMethod
-    fun removePayment(call: PluginCall) {
-        val userId = call.getString("userId")
-        val paymentId = call.getString("paymentId")
-
-        if (userId.isNullOrBlank()) {
-            call.reject("INVALID_PARAMETER", "userId is required")
-            return
+        val statusStr = paymentObj.getString("status")
+        val status = if (statusStr.isNullOrBlank()) {
+            null
+        } else {
+            convertToPaymentStatus(statusStr)
+                ?: throw IllegalArgumentException("invalid payment status: $statusStr")
         }
-
-        try {
-            val removeRequest = io.linkrunner.sdk.models.request.RemovePaymentRequest(
-                paymentId = paymentId,
-                userId = userId
-            )
-
-            coroutineScope.launch {
-                try {
-                    val result = linkrunner.removePayment(removeRequest)
-
-                    if (result.isSuccess) {
-                        call.resolve()
-                    } else {
-                        val exception = result.exceptionOrNull()
-                        Log.e(TAG, "RemovePayment failed", exception)
-                        call.reject("REMOVE_PAYMENT_FAILED", exception?.message ?: "RemovePayment failed")
-                    }
-                } catch (e: Exception) {
-                    Log.e(TAG, "RemovePayment failed", e)
-                    call.reject("REMOVE_PAYMENT_FAILED", e.message ?: "RemovePayment failed")
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to convert payment removal data", e)
-            call.reject("DATA_CONVERSION_FAILED", e.message ?: "Failed to convert payment removal data")
-        }
-    }
-
-    /**
-     * Convert string to PaymentType enum
-     */
-    private fun convertToPaymentType(typeStr: String?): io.linkrunner.sdk.models.PaymentType {
-        return when (typeStr?.uppercase()) {
-            "FIRST_PAYMENT" -> io.linkrunner.sdk.models.PaymentType.FIRST_PAYMENT
-            "WALLET_TOPUP" -> io.linkrunner.sdk.models.PaymentType.WALLET_TOPUP
-            "FUNDS_WITHDRAWAL" -> io.linkrunner.sdk.models.PaymentType.FUNDS_WITHDRAWAL
-            "SUBSCRIPTION_CREATED" -> io.linkrunner.sdk.models.PaymentType.SUBSCRIPTION_CREATED
-            "SUBSCRIPTION_RENEWED" -> io.linkrunner.sdk.models.PaymentType.SUBSCRIPTION_RENEWED
-            "ONE_TIME" -> io.linkrunner.sdk.models.PaymentType.ONE_TIME
-            "RECURRING" -> io.linkrunner.sdk.models.PaymentType.RECURRING
-            else -> io.linkrunner.sdk.models.PaymentType.DEFAULT
-        }
-    }
-
-    /**
-     * Convert string to PaymentStatus enum
-     */
-    private fun convertToPaymentStatus(statusStr: String?): io.linkrunner.sdk.models.PaymentStatus {
-        return when (statusStr?.uppercase()) {
-            "PAYMENT_INITIATED" -> io.linkrunner.sdk.models.PaymentStatus.PAYMENT_INITIATED
-            "PAYMENT_FAILED" -> io.linkrunner.sdk.models.PaymentStatus.PAYMENT_FAILED
-            "PAYMENT_CANCELLED" -> io.linkrunner.sdk.models.PaymentStatus.PAYMENT_CANCELLED
-            else -> io.linkrunner.sdk.models.PaymentStatus.PAYMENT_COMPLETED
-        }
+        return EventPayment(
+            amount = amountValue.toDouble(),
+            paymentId = paymentId,
+            currency = currency,
+            status = status
+        )
     }
 
     /**
@@ -340,6 +256,13 @@ class LinkrunnerPlugin : Plugin() {
             return
         }
 
+        val payment = try {
+            call.getObject("payment")?.let { convertToEventPayment(it) }
+        } catch (e: IllegalArgumentException) {
+            call.reject("INVALID_PARAMETER", e.message ?: "Invalid payment")
+            return
+        }
+
         try {
             val eventDataMap = eventData?.let { convertJSObjectToMap(it) }
 
@@ -348,7 +271,8 @@ class LinkrunnerPlugin : Plugin() {
                     val result = linkrunner.trackEvent(
                         eventName = eventName,
                         eventData = eventDataMap,
-                        eventId = eventId
+                        eventId = eventId,
+                        payment = payment
                     )
 
                     if (result.isSuccess) {
