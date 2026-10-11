@@ -89,11 +89,14 @@ export interface IntegrationData {
 /**
  * Payment status enumeration
  */
-export type PaymentStatus =
-  | 'PAYMENT_INITIATED'
-  | 'PAYMENT_COMPLETED'
-  | 'PAYMENT_FAILED'
-  | 'PAYMENT_CANCELLED';
+export const PaymentStatus = {
+  PAYMENT_INITIATED: 'PAYMENT_INITIATED',
+  PAYMENT_COMPLETED: 'PAYMENT_COMPLETED',
+  PAYMENT_FAILED: 'PAYMENT_FAILED',
+  PAYMENT_CANCELLED: 'PAYMENT_CANCELLED',
+} as const;
+
+export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus];
 
 /**
  * Options for SDK initialization

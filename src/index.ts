@@ -1,13 +1,9 @@
 import { registerPlugin } from '@capacitor/core';
 
-import type { LinkrunnerPlugin, UserData, AttributionData, DeeplinkData, IntegrationData, EventPayment, PaymentStatus } from './definitions';
+import { PaymentStatus } from './definitions';
+import type { LinkrunnerPlugin, UserData, AttributionData, DeeplinkData, IntegrationData, EventPayment } from './definitions';
 
-const VALID_PAYMENT_STATUSES: PaymentStatus[] = [
-  'PAYMENT_INITIATED',
-  'PAYMENT_COMPLETED',
-  'PAYMENT_FAILED',
-  'PAYMENT_CANCELLED',
-];
+const VALID_PAYMENT_STATUSES: PaymentStatus[] = Object.values(PaymentStatus);
 
 const CURRENCY_CODE_PATTERN = /^[A-Za-z]{3}$/;
 
@@ -45,7 +41,7 @@ function normalizeEventPayment(payment: EventPayment): Required<EventPayment> {
     paymentId: payment.paymentId,
     currency: payment.currency.trim().toUpperCase(),
     userId: payment.userId,
-    status: payment.status || 'PAYMENT_COMPLETED',
+    status: payment.status || PaymentStatus.PAYMENT_COMPLETED,
   };
 }
 

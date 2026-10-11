@@ -9,6 +9,7 @@
 - New `TrackPaymentOptions` and `EventPayment` types.
 - Bumped the native Android SDK to `io.linkrunner:android-sdk:5.0.0`.
 - Bumped the native iOS SDK to `LinkrunnerKit 5.0.0` (podspec and Package.swift).
+- `PaymentStatus` is exported as a runtime object, so you can write `PaymentStatus.PAYMENT_COMPLETED` (`import { PaymentStatus } from 'capacitor-linkrunner'`). Plain strings such as `'PAYMENT_COMPLETED'` still work.
 
 ### Removed
 
