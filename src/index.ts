@@ -7,9 +7,6 @@ const VALID_PAYMENT_STATUSES: PaymentStatus[] = Object.values(PaymentStatus);
 
 const CURRENCY_CODE_PATTERN = /^[A-Za-z]{3}$/;
 
-/**
- * Returns why a payment is invalid, or null when it can be sent
- */
 function validateEventPayment(payment: EventPayment, prefix: string): string | null {
   if (payment === null || typeof payment !== 'object') {
     return 'payment must be an object';
@@ -32,9 +29,7 @@ function validateEventPayment(payment: EventPayment, prefix: string): string | n
   return null;
 }
 
-/**
- * Builds the payment sent to native code; a blank userId falls back to the stored signup user id
- */
+// A blank userId falls back to the stored signup user id.
 function normalizeEventPayment(payment: EventPayment): Required<EventPayment> {
   return {
     amount: payment.amount,
@@ -45,9 +40,6 @@ function normalizeEventPayment(payment: EventPayment): Required<EventPayment> {
   };
 }
 
-/**
- * Converts a string or number event id to a string, ignoring other types
- */
 function processEventId(eventId: string | number | undefined, method: string): string | undefined {
   if (eventId === undefined || eventId === null) {
     return undefined;

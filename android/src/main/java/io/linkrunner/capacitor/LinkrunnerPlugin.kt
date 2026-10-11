@@ -211,9 +211,6 @@ class LinkrunnerPlugin : Plugin() {
         return PaymentStatus.values().firstOrNull { it.name == statusStr.uppercase() }
     }
 
-    /**
-     * Convert a JS payment object to a native EventPayment, throwing IllegalArgumentException when invalid
-     */
     private fun convertToEventPayment(paymentObj: JSObject, prefix: String = "payment."): EventPayment {
         val amountValue = paymentObj.opt("amount")
         if (amountValue !is Number) {
