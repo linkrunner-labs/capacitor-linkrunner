@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.0] - 2026-10-12
+
+- `setUserData` no longer needs a customer user id, so it can be called right after `init`. `UserData.id` is now optional: pass only the analytics ids you have (for example `mixpanel_distinct_id`, `amplitude_device_id`, `posthog_distinct_id`) and add `id` later, once your app knows the user. Linkrunner sets its attribution properties (`lr_campaign`, `lr_ad_network`) on the profiles of the analytics tools you identified, when that integration is configured for your project. `signup` still requires `id`.
+- An id-less `setUserData` call no longer clears the stored customer user id, so custom events keep their `user_id`.
+- Added `UserData.moengage_user_id`, so MoEngage profiles receive Linkrunner attribution.
+- Bumped the native Android SDK to `io.linkrunner:android-sdk:4.3.0` and the native iOS SDK to `LinkrunnerKit 4.3.0` (podspec and Package.swift).
+
 ## [2.2.0] - 2026-10-08
 
 - `getAttributionData()` now returns `gaid` and `idfa` in `data`: the advertising identifiers Linkrunner recorded the install with. Use them to join Linkrunner attribution with your own data instead of reading the identifier again on the device. Each is a string when available and absent otherwise. `gaid` is only set on Android and `idfa` only on iOS (when App Tracking Transparency is authorized).
