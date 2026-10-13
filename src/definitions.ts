@@ -2,8 +2,11 @@
  * User data interface for Linkrunner SDK
  */
 export interface UserData {
-  /** Required user identifier */
-  id: string;
+  /**
+   * Your customer user id. Required for `signup`; optional for `setUserData`, so
+   * `setUserData` can be called right after `init` with only analytics ids.
+   */
+  id?: string;
   /** Optional user name */
   name?: string;
   /** Optional user phone number */
@@ -28,6 +31,8 @@ export interface UserData {
   ga_session_id?: string;
   /** Optional Netcore device GUID */
   netcore_device_guid?: string;
+  /** Optional MoEngage user ID */
+  moengage_user_id?: string;
 }
 
 /**
@@ -130,8 +135,8 @@ export interface InitOptions {
  * Options for user signup
  */
 export interface SignupOptions {
-  /** Required user data */
-  userData: UserData;
+  /** Required user data; signup requires `id` */
+  userData: UserData & { id: string };
   /** Optional additional data */
   data?: Record<string, any>;
 }
