@@ -1,6 +1,6 @@
 {
   "name": "capacitor-linkrunner",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "description": "Linkrunner Capacitor Plugin",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
