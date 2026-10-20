@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.1] - 2026-10-19
+
+- Bumped the native Android SDK to `io.linkrunner:android-sdk:4.3.1`. On Android, `init`, `signup`, `setUserData` and `setCustomerUserId` no longer run Keystore encryption or blocking disk writes on the main thread, which could freeze the app and cause ANRs on slow devices. A normal app launch now does no Keystore write, and the WebView user agent is cached so it is not rebuilt on every cold start. No API changes. iOS is unchanged (`LinkrunnerKit 4.3.0`).
+
 ## [2.3.0] - 2026-10-12
 
 - `setUserData` no longer needs a customer user id, so it can be called right after `init`. `UserData.id` is now optional: pass only the analytics ids you have (for example `mixpanel_distinct_id`, `amplitude_device_id`, `posthog_distinct_id`) and add `id` later, once your app knows the user. Linkrunner sets its attribution properties (`lr_campaign`, `lr_ad_network`) on the profiles of the analytics tools you identified, when that integration is configured for your project. `signup` still requires `id`.
