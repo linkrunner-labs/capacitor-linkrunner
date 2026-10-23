@@ -74,7 +74,7 @@ public class LinkrunnerPlugin: CAPPlugin, CAPBridgedPlugin {
         }
         
         do {
-            let userData = try convertToUserData(userDataObj)
+            let userData = try convertToUserData(userDataObj, requireId: true)
             let additionalData = call.getObject("data")
             let additionalDataDict = additionalData != nil ? convertJSObjectToDict(additionalData!) : nil
             
@@ -101,7 +101,7 @@ public class LinkrunnerPlugin: CAPPlugin, CAPBridgedPlugin {
         }
         
         do {
-            let userData = try convertToUserData(userDataObj)
+            let userData = try convertToUserData(userDataObj, requireId: false)
             
             Task {
                 if #available(iOS 15.0, *) {
@@ -327,10 +327,11 @@ public class LinkrunnerPlugin: CAPPlugin, CAPBridgedPlugin {
 
 extension LinkrunnerPlugin {
     /**
-     * Convert JSObject to UserData
+     * Convert JSObject to UserData. signup needs an id; setUserData does not.
      */
-    private func convertToUserData(_ jsObject: JSObject) throws -> UserData {
-        guard let id = jsObject["id"] as? String, !id.isEmpty else {
+    private func convertToUserData(_ jsObject: JSObject, requireId: Bool) throws -> UserData {
+        let id = (jsObject["id"] as? String).flatMap { $0.isEmpty ? nil : $0 }
+        if requireId && id == nil {
             throw NSError(domain: "LinkrunnerPlugin", code: 1, userInfo: [NSLocalizedDescriptionKey: "User id is required"])
         }
         
@@ -347,7 +348,8 @@ extension LinkrunnerPlugin {
             brazeDeviceId: jsObject["braze_device_id"] as? String,
             gaAppInstanceId: jsObject["ga_app_instance_id"] as? String,
             gaSessionId: jsObject["ga_session_id"] as? String,
-            netcoreDeviceGuid: jsObject["netcore_device_guid"] as? String
+            netcoreDeviceGuid: jsObject["netcore_device_guid"] as? String,
+            moengageUserId: jsObject["moengage_user_id"] as? String
         )
     }
     

@@ -102,7 +102,7 @@ class LinkrunnerPlugin : Plugin() {
         }
 
         try {
-            val userData = convertToUserDataRequest(userDataObj)
+            val userData = convertToUserDataRequest(userDataObj, requireId = true)
             val dataMap = additionalData?.let { convertJSObjectToMap(it) }
 
             coroutineScope.launch {
@@ -140,7 +140,7 @@ class LinkrunnerPlugin : Plugin() {
         }
 
         try {
-            val userData = convertToUserDataRequest(userDataObj)
+            val userData = convertToUserDataRequest(userDataObj, requireId = false)
 
             coroutineScope.launch {
                 try {
@@ -165,11 +165,11 @@ class LinkrunnerPlugin : Plugin() {
     }
 
     /**
-     * Convert JSObject to UserDataRequest
+     * Convert JSObject to UserDataRequest. signup needs an id; setUserData does not.
      */
-    private fun convertToUserDataRequest(jsObject: JSObject): UserDataRequest {
-        val id = jsObject.getString("id")
-            ?: throw IllegalArgumentException("User id is required")
+    private fun convertToUserDataRequest(jsObject: JSObject, requireId: Boolean): UserDataRequest {
+        val id = jsObject.getString("id")?.takeIf { it.isNotBlank() }
+        if (requireId && id == null) throw IllegalArgumentException("User id is required")
 
         return UserDataRequest(
             id = id,
@@ -184,7 +184,8 @@ class LinkrunnerPlugin : Plugin() {
             gaSessionId = jsObject.getString("ga_session_id"),
             userCreatedAt = jsObject.getString("user_created_at"),
             isFirstTimeUser = jsObject.getBool("is_first_time_user"),
-            netcoreDeviceGuid = jsObject.getString("netcore_device_guid")
+            netcoreDeviceGuid = jsObject.getString("netcore_device_guid"),
+            moengageUserId = jsObject.getString("moengage_user_id")
         )
     }
 

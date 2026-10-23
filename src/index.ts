@@ -142,7 +142,7 @@ class Linkrunner {
    */
   async signup(options: {
     data?: Record<string, any>;
-    user_data: UserData;
+    user_data: UserData & { id: string };
   }): Promise<void> {
     // Check initialization state (token not null)
     if (!this.token) {
@@ -174,7 +174,9 @@ class Linkrunner {
   }
 
   /**
-   * Update user data
+   * Update user data. Can be called right after `init`: `id` is optional, so you can
+   * pass only analytics ids (Mixpanel, Amplitude, PostHog, ...) before your app knows
+   * the user. Linkrunner then sets its attribution properties on those tools' profiles.
    * @param user_data User data to update
    */
   async setUserData(user_data: UserData): Promise<void> {
@@ -185,9 +187,8 @@ class Linkrunner {
       throw new Error(error);
     }
 
-    // Validate user_data contains required id field
-    if (!user_data || !user_data.id || user_data.id.trim().length === 0) {
-      const error = 'Linkrunner: SetUserData failed, user_data.id is required';
+    if (!user_data) {
+      const error = 'Linkrunner: SetUserData failed, user_data is required';
       console.error(error);
       throw new Error(error);
     }
