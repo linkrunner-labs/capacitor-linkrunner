@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.0] - 2026-10-23
+
+- Bumped the native Android SDK to `io.linkrunner:android-sdk:4.4.0`. Android device data now includes `device_model` (`Build.MODEL`, for example `SM-M315F`), so Device Model is filled for Android users on the dashboard and in ad network postbacks. `device_name` is unchanged. No API changes. iOS is unchanged (`LinkrunnerKit 4.3.0`).
+
 ## [2.3.2] - 2026-10-21
 
 - Bumped the native Android SDK to `io.linkrunner:android-sdk:4.3.2`. Fixes a launch crash (`NoSuchMethodException: androidx.work.impl.WorkDatabase_Impl.<init>`) in Android release builds shrunk by R8 on Android Gradle Plugin 9, for example Expo 58 release builds where shrinking is on by default. With only that crash patched, `init`, `signup`, `trackEvent`, `capturePayment` and the other queued calls were never sent. The native SDK's consumer ProGuard rules now keep the constructors WorkManager creates by reflection, so apps need no rule of their own. No API changes. iOS is unchanged (`LinkrunnerKit 4.3.0`).
