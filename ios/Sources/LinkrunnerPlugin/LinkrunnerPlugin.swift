@@ -14,8 +14,6 @@ public class LinkrunnerPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "init", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "signup", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setUserData", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "capturePayment", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "removePayment", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "trackEvent", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getAttributionData", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setAdditionalData", returnType: CAPPluginReturnPromise),
@@ -114,67 +112,6 @@ public class LinkrunnerPlugin: CAPPlugin, CAPBridgedPlugin {
             }
         } catch {
             call.reject("Failed to convert user data: \(error.localizedDescription)")
-        }
-    }
-    
-    // MARK: - Payment Tracking
-    
-    /**
-     * Capture a payment event
-     */
-    @objc func capturePayment(_ call: CAPPluginCall) {
-        let userId = call.getString("userId") ?? ""
-
-        guard let amount = call.getDouble("amount") else {
-            call.reject("amount is required")
-            return
-        }
-        
-        guard let paymentId = call.getString("paymentId"), !paymentId.isEmpty else {
-            call.reject("paymentId is required")
-            return
-        }
-
-        let typeStr = call.getString("type") ?? "DEFAULT"
-        let statusStr = call.getString("status") ?? "PAYMENT_COMPLETED"
-        
-        let type = convertToPaymentType(typeStr)
-        let status = convertToPaymentStatus(statusStr)
-        
-        Task {
-            if #available(iOS 15.0, *) {
-                await linkrunner.capturePayment(
-                    amount: amount,
-                    userId: userId,
-                    paymentId: paymentId,
-                    type: type,
-                    status: status
-                )
-                call.resolve()
-            } else {
-                call.reject("iOS 15.0 or later is required")
-            }
-        }
-    }
-    
-    /**
-     * Remove a payment event
-     */
-    @objc func removePayment(_ call: CAPPluginCall) {
-        guard let userId = call.getString("userId"), !userId.isEmpty else {
-            call.reject("userId is required")
-            return
-        }
-        
-        let paymentId = call.getString("paymentId")
-        
-        Task {
-            if #available(iOS 15.0, *) {
-                await linkrunner.removePayment(userId: userId, paymentId: paymentId)
-                call.resolve()
-            } else {
-                call.reject("iOS 15.0 or later is required")
-            }
         }
     }
     
@@ -373,46 +310,6 @@ extension LinkrunnerPlugin {
             dict[key] = value
         }
         return dict
-    }
-    
-    /**
-     * Convert string to PaymentType enum
-     */
-    private func convertToPaymentType(_ typeStr: String) -> PaymentType {
-        switch typeStr.uppercased() {
-        case "FIRST_PAYMENT":
-            return .firstPayment
-        case "WALLET_TOPUP":
-            return .walletTopup
-        case "FUNDS_WITHDRAWAL":
-            return .fundsWithdrawal
-        case "SUBSCRIPTION_CREATED":
-            return .subscriptionCreated
-        case "SUBSCRIPTION_RENEWED":
-            return .subscriptionRenewed
-        case "ONE_TIME":
-            return .oneTime
-        case "RECURRING":
-            return .recurring
-        default:
-            return .default
-        }
-    }
-    
-    /**
-     * Convert string to PaymentStatus enum
-     */
-    private func convertToPaymentStatus(_ statusStr: String) -> PaymentStatus {
-        switch statusStr.uppercased() {
-        case "PAYMENT_INITIATED":
-            return .initiated
-        case "PAYMENT_FAILED":
-            return .failed
-        case "PAYMENT_CANCELLED":
-            return .cancelled
-        default:
-            return .completed
-        }
     }
     
     /**

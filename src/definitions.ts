@@ -92,26 +92,16 @@ export interface IntegrationData {
 }
 
 /**
- * Payment type enumeration
- */
-export type PaymentType =
-  | 'FIRST_PAYMENT'
-  | 'WALLET_TOPUP'
-  | 'FUNDS_WITHDRAWAL'
-  | 'SUBSCRIPTION_CREATED'
-  | 'SUBSCRIPTION_RENEWED'
-  | 'DEFAULT'
-  | 'ONE_TIME'
-  | 'RECURRING';
-
-/**
  * Payment status enumeration
  */
-export type PaymentStatus =
-  | 'PAYMENT_INITIATED'
-  | 'PAYMENT_COMPLETED'
-  | 'PAYMENT_FAILED'
-  | 'PAYMENT_CANCELLED';
+export const PaymentStatus = {
+  PAYMENT_INITIATED: 'PAYMENT_INITIATED',
+  PAYMENT_COMPLETED: 'PAYMENT_COMPLETED',
+  PAYMENT_FAILED: 'PAYMENT_FAILED',
+  PAYMENT_CANCELLED: 'PAYMENT_CANCELLED',
+} as const;
+
+export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus];
 
 /**
  * Options for SDK initialization
@@ -147,32 +137,6 @@ export interface SignupOptions {
 export interface SetUserDataOptions {
   /** Required user data */
   userData: UserData;
-}
-
-/**
- * Options for capturing payment
- */
-export interface CapturePaymentOptions {
-  /** Required payment identifier */
-  paymentId: string;
-  /** Required user identifier; pass "" to fall back to the stored signup user_id */
-  userId: string;
-  /** Required payment amount */
-  amount: number;
-  /** Optional payment type (defaults to 'DEFAULT') */
-  type?: PaymentType;
-  /** Optional payment status (defaults to 'PAYMENT_COMPLETED') */
-  status?: PaymentStatus;
-}
-
-/**
- * Options for removing payment
- */
-export interface RemovePaymentOptions {
-  /** Optional payment identifier */
-  paymentId?: string;
-  /** Required user identifier */
-  userId: string;
 }
 
 /**
@@ -278,20 +242,8 @@ export interface LinkrunnerPlugin {
   setUserData(options: SetUserDataOptions): Promise<void>;
 
   /**
-   * Capture a payment event
-   * @param options Payment details including user ID, amount, type, and status
-   */
-  capturePayment(options: CapturePaymentOptions): Promise<void>;
-
-  /**
-   * Remove or refund a payment
-   * @param options Payment removal details including user ID and optional payment ID
-   */
-  removePayment(options: RemovePaymentOptions): Promise<void>;
-
-  /**
-   * Track a custom event
-   * @param options Event details including name, data, and optional ID
+   * Track an in-app event; eventData with amount, paymentId and currency records a payment
+   * @param options Event details including name, data and optional ID
    */
   trackEvent(options: TrackEventOptions): Promise<void>;
 
