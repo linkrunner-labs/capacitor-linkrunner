@@ -2,18 +2,17 @@
 
 ## [3.0.0] - Unreleased
 
-### Added
+### Changed
 
-- `trackPayment({ eventName, paymentId, userId, amount, currency, status?, eventData?, eventId? })` records a payment as an event. This is the main way to send payments now. The event name becomes the payment type. `amount` must be a finite number >= 0, `paymentId` must not be empty, `currency` must be a 3-letter ISO 4217 code and `userId` must be a string (pass `''` to fall back to the user from `signup`). `status` defaults to `PAYMENT_COMPLETED` and is always sent. The call throws before dispatch when any of these is invalid.
-- `trackEvent` takes an optional 4th argument `payment: { amount, paymentId, currency, userId, status? }` with the same rules, for attaching a payment to an event you already track. Calls without a payment work exactly as before.
-- New `TrackPaymentOptions` and `EventPayment` types.
+- **Breaking:** payments are now in-app events sent with `trackEvent`. Put `amount`, `paymentId` and `currency` in `eventData` and the event is recorded as a payment. `userId` is required for a payment (pass `''` to use the user from `signup`), and `status` is optional and defaults to `PAYMENT_COMPLETED`. Other keys stay as event data. Events without those three keys work exactly as before.
+- The native SDKs validate a payment before sending it. `paymentId` without `amount` or `currency`, a negative amount, a currency that is not 3 letters, a blank `paymentId` or an unknown `status` is rejected and nothing is sent.
 - Bumped the native Android SDK to `io.linkrunner:android-sdk:5.0.0`.
 - Bumped the native iOS SDK to `LinkrunnerKit 5.0.0` (podspec and Package.swift).
 - `PaymentStatus` is exported as a runtime object, so you can write `PaymentStatus.PAYMENT_COMPLETED` (`import { PaymentStatus } from 'capacitor-linkrunner'`). Plain strings such as `'PAYMENT_COMPLETED'` still work.
 
 ### Removed
 
-- **Breaking:** `capturePayment` and `removePayment`. Send payments with `trackPayment` instead.
+- **Breaking:** `capturePayment` and `removePayment`. Send payments with `trackEvent`. To record a refund, send the same `paymentId` with `status: 'PAYMENT_CANCELLED'`.
 - **Breaking:** the `PaymentType` type and the `CapturePaymentOptions` / `RemovePaymentOptions` interfaces. `PaymentStatus` stays.
 
 ### Migration
@@ -33,21 +32,20 @@ await linkrunner.capturePayment({
 After:
 
 ```ts
-await linkrunner.trackPayment({
-  eventName: 'FIRST_PAYMENT',
-  paymentId: 'order_123',
-  userId: 'user_1',
+await linkrunner.trackEvent('FIRST_PAYMENT', {
   amount: 499,
+  paymentId: 'order_123',
   currency: 'INR',
-  status: 'PAYMENT_COMPLETED',
+  userId: 'user_1',
+  status: PaymentStatus.PAYMENT_COMPLETED,
 });
 ```
 
-`type` becomes `eventName`, `currency` is now required, and `userId` stays required as before. There is no replacement for `removePayment`.
+Rename `capturePayment` to `trackEvent`, pass the old `type` as the event name with the same spelling, and move the fields into `eventData`. `currency` is new and required.
 
 ### Payment names and dashboard mappings
 
-The event name you pass becomes the payment type in reports and in your dashboard event mappings, and it is stored exactly as you send it. If you used one of the old payment types, pass it in uppercase exactly as before (for example `FIRST_PAYMENT` or `DEFAULT`), so your existing mappings, reports and partner templates keep working with no change. A different spelling such as `first_payment` is a new payment type. If you pick a new name such as `purchase`, add a mapping for it in the dashboard before you release, or those payments are not sent to ad networks. `capturePayment` without a type was stored as `DEFAULT`.
+The event name you pass to `trackEvent` becomes the payment type in reports and in your dashboard event mappings, and it is stored exactly as you send it. If you used one of the old payment types, pass it in uppercase exactly as before (for example `FIRST_PAYMENT` or `DEFAULT`), so your existing mappings, reports and partner templates keep working with no change. A different spelling such as `first_payment` is a new payment type. If you pick a new name such as `purchase`, add a mapping for it in the dashboard before you release, or those payments are not sent to ad networks. `capturePayment` without a type was stored as `DEFAULT`.
 
 ## [2.3.2] - 2026-10-21
 

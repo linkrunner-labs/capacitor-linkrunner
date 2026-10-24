@@ -6,7 +6,6 @@ import type {
   SignupOptions,
   SetUserDataOptions,
   TrackEventOptions,
-  TrackPaymentOptions,
   SetAdditionalDataOptions,
   EnablePIIHashingOptions,
   SetPushTokenOptions,
@@ -31,10 +30,6 @@ export class LinkrunnerWeb extends WebPlugin implements LinkrunnerPlugin {
 
   async trackEvent(options: TrackEventOptions): Promise<void> {
     console.warn('Linkrunner: trackEvent is not available on web platform', options);
-  }
-
-  async trackPayment(options: TrackPaymentOptions): Promise<void> {
-    console.warn('Linkrunner: trackPayment is not available on web platform', options);
   }
 
   async getAttributionData(): Promise<AttributionDataResult> {

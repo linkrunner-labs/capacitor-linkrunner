@@ -140,44 +140,6 @@ export interface SetUserDataOptions {
 }
 
 /**
- * Revenue attached to a tracked event; the event name becomes the payment type
- */
-export interface EventPayment {
-  /** Required payment amount, a finite number >= 0 */
-  amount: number;
-  /** Required payment identifier */
-  paymentId: string;
-  /** Required 3-letter ISO 4217 currency code, e.g. 'USD' */
-  currency: string;
-  /** Required user identifier; pass '' to fall back to the stored signup user id */
-  userId: string;
-  /** Optional payment status (defaults to 'PAYMENT_COMPLETED') */
-  status?: PaymentStatus;
-}
-
-/**
- * Options for tracking a payment; the event name becomes the payment type
- */
-export interface TrackPaymentOptions {
-  /** Required event name, stored as the payment type */
-  eventName: string;
-  /** Required payment identifier */
-  paymentId: string;
-  /** Required user identifier; pass '' to fall back to the stored signup user id */
-  userId: string;
-  /** Required payment amount, a finite number >= 0 */
-  amount: number;
-  /** Required 3-letter ISO 4217 currency code, e.g. 'USD' */
-  currency: string;
-  /** Optional payment status (defaults to 'PAYMENT_COMPLETED') */
-  status?: PaymentStatus;
-  /** Optional event data */
-  eventData?: Record<string, any>;
-  /** Optional event identifier */
-  eventId?: string;
-}
-
-/**
  * Options for tracking events
  */
 export interface TrackEventOptions {
@@ -187,8 +149,6 @@ export interface TrackEventOptions {
   eventData?: Record<string, any>;
   /** Optional event identifier (string or number) */
   eventId?: string;
-  /** Optional payment recorded with this event */
-  payment?: EventPayment;
 }
 
 /**
@@ -282,16 +242,10 @@ export interface LinkrunnerPlugin {
   setUserData(options: SetUserDataOptions): Promise<void>;
 
   /**
-   * Track a custom event, optionally with a payment
-   * @param options Event details including name, data, optional ID and optional payment
+   * Track an in-app event; eventData with amount, paymentId and currency records a payment
+   * @param options Event details including name, data and optional ID
    */
   trackEvent(options: TrackEventOptions): Promise<void>;
-
-  /**
-   * Track a payment as an event
-   * @param options Payment details including event name, payment ID, user ID, amount and currency
-   */
-  trackPayment(options: TrackPaymentOptions): Promise<void>;
 
   /**
    * Retrieve attribution data
