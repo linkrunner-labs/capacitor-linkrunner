@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.1] - 2026-10-25
+
+- Bumped the native iOS SDK to `LinkrunnerKit 4.3.1`. Fixes an `EXC_BAD_ACCESS (KERN_INVALID_ADDRESS)` crash at app launch on iOS, in frames like `DeviceData`, `getAttributionToken`, `setUserData` and `makeRequestWithRetry`, that could happen when `init`, `setUserData`, `trackEvent` and other calls ran at the same time. LinkrunnerKit 4.1.0 to 4.3.0 shared the cached AdServices token between those calls without a lock, and every piece of shared state is now locked. No API changes. Android is unchanged (`io.linkrunner:android-sdk:4.4.0`).
+
 ## [2.4.0] - 2026-10-23
 
 - Bumped the native Android SDK to `io.linkrunner:android-sdk:4.4.0`. Android device data now includes `device_model` (`Build.MODEL`, for example `SM-M315F`), so Device Model is filled for Android users on the dashboard and in ad network postbacks. `device_name` is unchanged. No API changes. iOS is unchanged (`LinkrunnerKit 4.3.0`).
