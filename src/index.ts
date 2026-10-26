@@ -1,6 +1,6 @@
 import { registerPlugin } from '@capacitor/core';
 
-import type { LinkrunnerPlugin, UserData, AttributionData, DeeplinkData, IntegrationData } from './definitions';
+import type { LinkrunnerPlugin, UserData, AttributionData, DeeplinkData, IntegrationData, PaymentType, PaymentStatus } from './definitions';
 
 const LinkrunnerPluginInstance = registerPlugin<LinkrunnerPlugin>('Linkrunner', {
   web: () => import('./web').then((m) => new m.LinkrunnerWeb()),
@@ -151,6 +151,127 @@ class Linkrunner {
       console.log('Linkrunner setUserData successful');
     } catch (error) {
       console.error('Error during Linkrunner setUserData', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Capture a payment event
+   * @param options Payment details including user ID, amount, type, and status
+   * @deprecated Use trackEvent(eventName, { amount, paymentId, currency, userId }) instead
+   */
+  async capturePayment(options: {
+    paymentId: string;
+    userId: string;
+    amount: number;
+    type?: PaymentType;
+    status?: PaymentStatus;
+  }): Promise<void> {
+    // Check initialization state
+    if (!this.token) {
+      const error = 'Linkrunner: CapturePayment failed, SDK not initialized';
+      console.error(error);
+      throw new Error(error);
+    }
+
+    if (!options.paymentId || options.paymentId.trim().length === 0) {
+      const error = 'Linkrunner: CapturePayment failed, paymentId is required';
+      console.error(error);
+      throw new Error(error);
+    }
+
+    if (options.amount === undefined || options.amount === null) {
+      const error = 'Linkrunner: CapturePayment failed, amount is required';
+      console.error(error);
+      throw new Error(error);
+    }
+
+    // Apply defaults: type='DEFAULT', status='PAYMENT_COMPLETED'
+    const type = options.type || 'DEFAULT';
+    const status = options.status || 'PAYMENT_COMPLETED';
+
+    // Validate enum values for type
+    const validTypes: PaymentType[] = [
+      'FIRST_PAYMENT',
+      'WALLET_TOPUP',
+      'FUNDS_WITHDRAWAL',
+      'SUBSCRIPTION_CREATED',
+      'SUBSCRIPTION_RENEWED',
+      'DEFAULT',
+      'ONE_TIME',
+      'RECURRING',
+    ];
+    if (!validTypes.includes(type)) {
+      const error = `Linkrunner: CapturePayment failed, invalid payment type: ${type}`;
+      console.error(error);
+      throw new Error(error);
+    }
+
+    // Validate enum values for status
+    const validStatuses: PaymentStatus[] = [
+      'PAYMENT_INITIATED',
+      'PAYMENT_COMPLETED',
+      'PAYMENT_FAILED',
+      'PAYMENT_CANCELLED',
+    ];
+    if (!validStatuses.includes(status)) {
+      const error = `Linkrunner: CapturePayment failed, invalid payment status: ${status}`;
+      console.error(error);
+      throw new Error(error);
+    }
+
+    try {
+      // Pass payment data to native plugin
+      await this.plugin.capturePayment({
+        paymentId: options.paymentId,
+        userId: options.userId,
+        amount: options.amount,
+        type,
+        status,
+      });
+
+      // Add debug logging
+      console.log('Linkrunner capturePayment successful');
+    } catch (error) {
+      console.error('Error during Linkrunner capturePayment', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Remove or refund a payment
+   * @param options Payment removal details including user ID and optional payment ID
+   * @deprecated Send the same paymentId with status PAYMENT_CANCELLED through trackEvent
+   */
+  async removePayment(options: {
+    paymentId?: string;
+    userId: string;
+  }): Promise<void> {
+    // Check initialization state
+    if (!this.token) {
+      const error = 'Linkrunner: RemovePayment failed, SDK not initialized';
+      console.error(error);
+      throw new Error(error);
+    }
+
+    // Validate required userId field
+    if (!options.userId || options.userId.trim().length === 0) {
+      const error = 'Linkrunner: RemovePayment failed, userId is required';
+      console.error(error);
+      throw new Error(error);
+    }
+
+    try {
+      // Pass payment removal data to native plugin
+      await this.plugin.removePayment({
+        paymentId: options.paymentId,
+        userId: options.userId,
+      });
+
+      // Add debug logging
+      console.log('Linkrunner removePayment successful');
+    } catch (error) {
+      console.error('Error during Linkrunner removePayment', error);
       throw error;
     }
   }

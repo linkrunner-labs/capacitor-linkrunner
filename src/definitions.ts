@@ -92,6 +92,20 @@ export interface IntegrationData {
 }
 
 /**
+ * Payment type enumeration
+ * @deprecated Pass the payment name as the trackEvent eventName, for example 'FIRST_PAYMENT'
+ */
+export type PaymentType =
+  | 'FIRST_PAYMENT'
+  | 'WALLET_TOPUP'
+  | 'FUNDS_WITHDRAWAL'
+  | 'SUBSCRIPTION_CREATED'
+  | 'SUBSCRIPTION_RENEWED'
+  | 'DEFAULT'
+  | 'ONE_TIME'
+  | 'RECURRING';
+
+/**
  * Payment status enumeration
  */
 export const PaymentStatus = {
@@ -137,6 +151,34 @@ export interface SignupOptions {
 export interface SetUserDataOptions {
   /** Required user data */
   userData: UserData;
+}
+
+/**
+ * Options for capturing payment
+ * @deprecated Use trackEvent with amount, paymentId and currency in eventData
+ */
+export interface CapturePaymentOptions {
+  /** Required payment identifier */
+  paymentId: string;
+  /** Required user identifier; pass "" to fall back to the stored signup user_id */
+  userId: string;
+  /** Required payment amount */
+  amount: number;
+  /** Optional payment type (defaults to 'DEFAULT') */
+  type?: PaymentType;
+  /** Optional payment status (defaults to 'PAYMENT_COMPLETED') */
+  status?: PaymentStatus;
+}
+
+/**
+ * Options for removing payment
+ * @deprecated Send the same paymentId with status PAYMENT_CANCELLED through trackEvent
+ */
+export interface RemovePaymentOptions {
+  /** Optional payment identifier */
+  paymentId?: string;
+  /** Required user identifier */
+  userId: string;
 }
 
 /**
@@ -240,6 +282,20 @@ export interface LinkrunnerPlugin {
    * @param options User data to update
    */
   setUserData(options: SetUserDataOptions): Promise<void>;
+
+  /**
+   * Capture a payment event
+   * @param options Payment details including user ID, amount, type, and status
+   * @deprecated Use trackEvent(eventName, { amount, paymentId, currency, userId }) instead
+   */
+  capturePayment(options: CapturePaymentOptions): Promise<void>;
+
+  /**
+   * Remove or refund a payment
+   * @param options Payment removal details including user ID and optional payment ID
+   * @deprecated Send the same paymentId with status PAYMENT_CANCELLED through trackEvent
+   */
+  removePayment(options: RemovePaymentOptions): Promise<void>;
 
   /**
    * Track an in-app event; eventData with amount, paymentId and currency records a payment

@@ -4,16 +4,16 @@
 
 ### Changed
 
-- **Breaking:** payments are now in-app events sent with `trackEvent`. Put `amount`, `paymentId` and `currency` in `eventData` and the event is recorded as a payment. `userId` is required for a payment (pass `''` to use the user from `signup`), and `status` is optional and defaults to `PAYMENT_COMPLETED`. Other keys stay as event data. Events without those three keys work exactly as before.
+- Payments are now in-app events sent with `trackEvent`. Put `amount`, `paymentId` and `currency` in `eventData` and the event is recorded as a payment. `userId` is required for a payment (pass `''` to use the user from `signup`), and `status` is optional and defaults to `PAYMENT_COMPLETED`. Other keys stay as event data. Events without those three keys work exactly as before.
 - The native SDKs validate a payment before sending it. `paymentId` without `amount` or `currency`, a negative amount, a currency that is not 3 letters, a blank `paymentId` or an unknown `status` is rejected and nothing is sent.
 - Bumped the native Android SDK to `io.linkrunner:android-sdk:5.0.0`.
 - Bumped the native iOS SDK to `LinkrunnerKit 5.0.0` (podspec and Package.swift).
 - `PaymentStatus` is exported as a runtime object, so you can write `PaymentStatus.PAYMENT_COMPLETED` (`import { PaymentStatus } from 'capacitor-linkrunner'`). Plain strings such as `'PAYMENT_COMPLETED'` still work.
 
-### Removed
+### Deprecated
 
-- **Breaking:** `capturePayment` and `removePayment`. Send payments with `trackEvent`. To record a refund, send the same `paymentId` with `status: 'PAYMENT_CANCELLED'`.
-- **Breaking:** the `PaymentType` type and the `CapturePaymentOptions` / `RemovePaymentOptions` interfaces. `PaymentStatus` stays.
+- `capturePayment` and `removePayment` are deprecated. They still work as before on the old endpoint and will be removed in a future major version. Send payments with `trackEvent`. To record a refund, send the same `paymentId` with `status: 'PAYMENT_CANCELLED'`.
+- The `PaymentType` type and the `CapturePaymentOptions` / `RemovePaymentOptions` interfaces are deprecated with them. `PaymentStatus` is shared by both paths.
 
 ### Migration
 
