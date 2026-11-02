@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.2] - 2026-11-02
+
+- Bumped the native iOS SDK to `LinkrunnerKit 4.3.2`. Fixes SKAdNetwork postbacks arriving with no conversion value on iOS 17.4 and above. LinkrunnerKit 4.1.0 to 4.3.1 called only `AdAttributionKit.Postback.updateConversionValue` on those versions, and Apple mirrors SKAdNetwork updates into AdAttributionKit but not the other way round, so installs from SKAdNetwork-signed networks such as Meta and Google got postbacks with no conversion value. 4.3.2 calls both `Postback.updateConversionValue` and `SKAdNetwork.updatePostbackConversionValue`. No API changes. Android is unchanged (`io.linkrunner:android-sdk:4.4.0`).
+
 ## [2.4.1] - 2026-10-25
 
 - Bumped the native iOS SDK to `LinkrunnerKit 4.3.1`. Fixes an `EXC_BAD_ACCESS (KERN_INVALID_ADDRESS)` crash at app launch on iOS, in frames like `DeviceData`, `getAttributionToken`, `setUserData` and `makeRequestWithRetry`, that could happen when `init`, `setUserData`, `trackEvent` and other calls ran at the same time. LinkrunnerKit 4.1.0 to 4.3.0 shared the cached AdServices token between those calls without a lock, and every piece of shared state is now locked. No API changes. Android is unchanged (`io.linkrunner:android-sdk:4.4.0`).
