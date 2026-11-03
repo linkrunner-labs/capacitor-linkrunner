@@ -1,7 +1,7 @@
 {
   "name": "capacitor-linkrunner",
   "version": "2.4.2",
-  "description": "Linkrunner Capacitor Plugin",
+  "description": "Linkrunner MMP SDK for Capacitor: install attribution, deferred deep linking, in-app events and revenue for iOS and Android.",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
@@ -27,7 +27,13 @@
   "keywords": [
     "capacitor",
     "plugin",
-    "native"
+    "native",
+    "mmp",
+    "mobile-attribution",
+    "attribution",
+    "deep-linking",
+    "deferred-deep-linking",
+    "linkrunner"
   ],
   "scripts": {
     "verify": "npm run verify:ios && npm run verify:android && npm run verify:web",
