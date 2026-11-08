@@ -206,6 +206,7 @@ class LinkrunnerPlugin : Plugin() {
     /**
      * Capture a payment event
      */
+    @Suppress("DEPRECATION")
     @PluginMethod
     fun capturePayment(call: PluginCall) {
         val userId = call.getString("userId") ?: ""
@@ -261,6 +262,7 @@ class LinkrunnerPlugin : Plugin() {
     /**
      * Remove a payment event
      */
+    @Suppress("DEPRECATION")
     @PluginMethod
     fun removePayment(call: PluginCall) {
         val userId = call.getString("userId")
@@ -302,6 +304,7 @@ class LinkrunnerPlugin : Plugin() {
     /**
      * Convert string to PaymentType enum
      */
+    @Suppress("DEPRECATION")
     private fun convertToPaymentType(typeStr: String?): io.linkrunner.sdk.models.PaymentType {
         return when (typeStr?.uppercase()) {
             "FIRST_PAYMENT" -> io.linkrunner.sdk.models.PaymentType.FIRST_PAYMENT

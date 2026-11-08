@@ -12,7 +12,7 @@ const LinkrunnerPluginInstance = registerPlugin<LinkrunnerPlugin>('Linkrunner', 
 class Linkrunner {
   private token: string | null = null;
   private plugin: LinkrunnerPlugin;
-  private packageVersion: string = '2.4.2';
+  private packageVersion: string = '3.0.0';
 
   constructor() {
     this.plugin = LinkrunnerPluginInstance;
@@ -158,6 +158,7 @@ class Linkrunner {
   /**
    * Capture a payment event
    * @param options Payment details including user ID, amount, type, and status
+   * @deprecated Use trackEvent(eventName, { amount, paymentId, currency, userId }) instead
    */
   async capturePayment(options: {
     paymentId: string;
@@ -240,6 +241,7 @@ class Linkrunner {
   /**
    * Remove or refund a payment
    * @param options Payment removal details including user ID and optional payment ID
+   * @deprecated Send the same paymentId with status PAYMENT_CANCELLED through trackEvent
    */
   async removePayment(options: {
     paymentId?: string;
@@ -275,9 +277,9 @@ class Linkrunner {
   }
 
   /**
-   * Track a custom event
+   * Track an in-app event; eventData with amount, paymentId and currency records a payment
    * @param eventName Required event name
-   * @param eventData Optional event data
+   * @param eventData Optional event data, including payment fields for a payment
    * @param eventId Optional event identifier (string or number)
    */
   async trackEvent(

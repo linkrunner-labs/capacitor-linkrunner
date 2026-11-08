@@ -93,6 +93,7 @@ export interface IntegrationData {
 
 /**
  * Payment type enumeration
+ * @deprecated Pass the payment name as the trackEvent eventName, for example 'FIRST_PAYMENT'
  */
 export type PaymentType =
   | 'FIRST_PAYMENT'
@@ -107,11 +108,14 @@ export type PaymentType =
 /**
  * Payment status enumeration
  */
-export type PaymentStatus =
-  | 'PAYMENT_INITIATED'
-  | 'PAYMENT_COMPLETED'
-  | 'PAYMENT_FAILED'
-  | 'PAYMENT_CANCELLED';
+export const PaymentStatus = {
+  PAYMENT_INITIATED: 'PAYMENT_INITIATED',
+  PAYMENT_COMPLETED: 'PAYMENT_COMPLETED',
+  PAYMENT_FAILED: 'PAYMENT_FAILED',
+  PAYMENT_CANCELLED: 'PAYMENT_CANCELLED',
+} as const;
+
+export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus];
 
 /**
  * Options for SDK initialization
@@ -151,6 +155,7 @@ export interface SetUserDataOptions {
 
 /**
  * Options for capturing payment
+ * @deprecated Use trackEvent with amount, paymentId and currency in eventData
  */
 export interface CapturePaymentOptions {
   /** Required payment identifier */
@@ -167,6 +172,7 @@ export interface CapturePaymentOptions {
 
 /**
  * Options for removing payment
+ * @deprecated Send the same paymentId with status PAYMENT_CANCELLED through trackEvent
  */
 export interface RemovePaymentOptions {
   /** Optional payment identifier */
@@ -280,18 +286,20 @@ export interface LinkrunnerPlugin {
   /**
    * Capture a payment event
    * @param options Payment details including user ID, amount, type, and status
+   * @deprecated Use trackEvent(eventName, { amount, paymentId, currency, userId }) instead
    */
   capturePayment(options: CapturePaymentOptions): Promise<void>;
 
   /**
    * Remove or refund a payment
    * @param options Payment removal details including user ID and optional payment ID
+   * @deprecated Send the same paymentId with status PAYMENT_CANCELLED through trackEvent
    */
   removePayment(options: RemovePaymentOptions): Promise<void>;
 
   /**
-   * Track a custom event
-   * @param options Event details including name, data, and optional ID
+   * Track an in-app event; eventData with amount, paymentId and currency records a payment
+   * @param options Event details including name, data and optional ID
    */
   trackEvent(options: TrackEventOptions): Promise<void>;
 
