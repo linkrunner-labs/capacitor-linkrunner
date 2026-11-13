@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.1.0] - 2026-11-13
+
+### Added
+
+- The SDK now reads the Meta (Facebook) SDK's anonymous ID when your app bundles the Meta SDK, and sends it with `init`, `signup`, `trackEvent` and `capturePayment`. The backend forwards it to Meta as `anon_id`, giving Meta the same match key it already has from the Meta SDK on the device. No app code changes and no new dependency: the lookup resolves at runtime and sends nothing when the Meta SDK is absent.
+- Opt out at build time: `<meta-data android:name="io.linkrunner.sdk.MetaAnonymousIdCollectionEnabled" android:value="false" />` in `AndroidManifest.xml`, and a `LinkrunnerMetaAnonymousIdCollectionEnabled` Boolean set to `NO` in `Info.plist`.
+
+### Changed
+
+- Native SDKs bumped to `io.linkrunner:android-sdk:5.1.0` and `LinkrunnerKit 5.1.0`. The CocoaPods dependency moves from `~> 5.0.0` to `~> 5.1.0`, since the old range excluded 5.1.0.
+
 ## [3.0.0] - 2026-11-08
 
 ### Changed
