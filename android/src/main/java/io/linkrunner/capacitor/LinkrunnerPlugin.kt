@@ -41,6 +41,8 @@ class LinkrunnerPlugin : Plugin() {
         val secretKey = call.getString("secretKey")
         val keyId = call.getString("keyId")
         val debug = call.getBoolean("debug", false) ?: false
+        // null when absent or null, so the native SDK keeps the stored value
+        val privacyMode: Boolean? = call.getBoolean("privacyMode", null)
         val packageVersion = call.getString("packageVersion")
 
         if (token.isNullOrBlank()) {
@@ -69,7 +71,8 @@ class LinkrunnerPlugin : Plugin() {
                     source = null,
                     secretKey = secretKey,
                     keyId = keyId,
-                    debug = debug
+                    debug = debug,
+                    privacyMode = privacyMode
                 )
 
                 if (result.isSuccess) {

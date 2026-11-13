@@ -1,5 +1,20 @@
 # Changelog
 
+## [3.1.0] - 2026-11-13
+
+### Added
+
+- `privacyMode` parameter on `init`, passed last: `linkrunner.init(token, secretKey, keyId, disableIdfa, debug, privacyMode)`. Use it for apps directed at children (COPPA, Apple Kids Category, Google Play Families).
+  - `true` stops collection of every device-level identifier. Only the SDK-generated install instance ID identifies the install. On Android the SDK skips GAID, App Set ID, Android ID, local IP, carrier name and the Meta install referrer. On iOS it skips IDFA and never shows the ATT prompt, skips IDFV, sends the generic model instead of the device name, and skips Google ODM and SKAdNetwork conversion values.
+  - The SDK still sends the install instance ID, device metadata (brand, model, OS version, locale, connectivity), the Google Play install referrer (Android) and the Apple AdServices attribution token (iOS). Data your app passes in (`signup`, `setUserData`, `setPushToken`, `setAdditionalData`) is still sent.
+  - `true` stays on across launches until you call `init` with `false`. Leave it unset to keep the stored value. Default off.
+  - Google iOS match rate drops, because IDFV is Google's fallback ID. Server-side IP matching still works.
+
+### Changed
+
+- Bumped the native Android SDK to `io.linkrunner:android-sdk:5.1.0`.
+- Bumped the native iOS SDK to `LinkrunnerKit 5.1.0` (podspec and Package.swift).
+
 ## [3.0.0] - 2026-11-08
 
 ### Changed
