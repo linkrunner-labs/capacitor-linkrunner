@@ -131,6 +131,12 @@ export interface InitOptions {
   disableIdfa?: boolean;
   /** Optional flag to enable debug logging */
   debug?: boolean;
+  /**
+   * Optional flag to stop collection of every device-level identifier (advertising IDs, Android ID, IDFV,
+   * local IP, carrier) on Android and iOS. `true` stays on across launches until init is called with `false`.
+   * Leave it unset to keep the stored value. Default off.
+   */
+  privacyMode?: boolean;
   /** SDK package version */
   packageVersion: string;
 }

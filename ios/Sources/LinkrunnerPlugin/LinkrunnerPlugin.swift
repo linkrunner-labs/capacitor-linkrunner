@@ -45,6 +45,8 @@ public class LinkrunnerPlugin: CAPPlugin, CAPBridgedPlugin {
         let keyId = call.getString("keyId")
         let disableIdfa = call.getBool("disableIdfa") ?? false
         let debug = call.getBool("debug") ?? false
+        // nil when absent, so the native SDK keeps the stored value
+        let privacyMode = call.getBool("privacyMode")
         
         // Initialize the SDK asynchronously
         Task {
@@ -54,7 +56,8 @@ public class LinkrunnerPlugin: CAPPlugin, CAPBridgedPlugin {
                     secretKey: secretKey,
                     keyId: keyId,
                     disableIdfa: disableIdfa,
-                    debug: debug
+                    debug: debug,
+                    privacyMode: privacyMode
                 )
                 call.resolve()
             } else {

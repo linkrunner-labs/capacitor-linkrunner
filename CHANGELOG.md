@@ -1,15 +1,31 @@
 # Changelog
 
-## [3.1.0] - 2026-11-13
+## [3.2.0] - 2026-11-14
 
 ### Added
 
 - The SDK now reads the Meta (Facebook) SDK's anonymous ID when your app bundles the Meta SDK, and sends it with `init`, `signup`, `trackEvent` and `capturePayment`. The backend forwards it to Meta as `anon_id`, giving Meta the same match key it already has from the Meta SDK on the device. No app code changes and no new dependency: the lookup resolves at runtime and sends nothing when the Meta SDK is absent.
 - Opt out at build time: `<meta-data android:name="io.linkrunner.sdk.MetaAnonymousIdCollectionEnabled" android:value="false" />` in `AndroidManifest.xml`, and a `LinkrunnerMetaAnonymousIdCollectionEnabled` Boolean set to `NO` in `Info.plist`.
+- Not sent when `privacyMode` is on.
 
 ### Changed
 
-- Native SDKs bumped to `io.linkrunner:android-sdk:5.1.0` and `LinkrunnerKit 5.1.0`. The CocoaPods dependency moves from `~> 5.0.0` to `~> 5.1.0`, since the old range excluded 5.1.0.
+- Native SDKs bumped to `io.linkrunner:android-sdk:5.2.0` and `LinkrunnerKit 5.2.0`. The CocoaPods dependency moves from `~> 5.1.0` to `~> 5.2.0`, since the old range excludes 5.2.0.
+
+## [3.1.0] - 2026-11-13
+
+### Added
+
+- `privacyMode` parameter on `init`, passed last: `linkrunner.init(token, secretKey, keyId, disableIdfa, debug, privacyMode)`. Use it for apps directed at children (COPPA, Apple Kids Category, Google Play Families).
+  - `true` stops collection of every device-level identifier. Only the SDK-generated install instance ID identifies the install. On Android the SDK skips GAID, App Set ID, Android ID, local IP, carrier name and the Meta install referrer. On iOS it skips IDFA and never shows the ATT prompt, skips IDFV, sends the generic model instead of the device name, and skips Google ODM and SKAdNetwork conversion values.
+  - The SDK still sends the install instance ID, device metadata (brand, model, OS version, locale, connectivity), the Google Play install referrer (Android) and the Apple AdServices attribution token (iOS). Data your app passes in (`signup`, `setUserData`, `setPushToken`, `setAdditionalData`) is still sent.
+  - `true` stays on across launches until you call `init` with `false`. Leave it unset to keep the stored value. Default off.
+  - Google iOS match rate drops, because IDFV is Google's fallback ID. Server-side IP matching still works.
+
+### Changed
+
+- Bumped the native Android SDK to `io.linkrunner:android-sdk:5.1.0`.
+- Bumped the native iOS SDK to `LinkrunnerKit 5.1.0` (podspec and Package.swift).
 
 ## [3.0.0] - 2026-11-08
 

@@ -12,7 +12,7 @@ const LinkrunnerPluginInstance = registerPlugin<LinkrunnerPlugin>('Linkrunner', 
 class Linkrunner {
   private token: string | null = null;
   private plugin: LinkrunnerPlugin;
-  private packageVersion: string = '3.0.0';
+  private packageVersion: string = '3.2.0';
 
   constructor() {
     this.plugin = LinkrunnerPluginInstance;
@@ -41,13 +41,16 @@ class Linkrunner {
    * @param keyId Optional key ID for request signing
    * @param disableIdfa Optional flag to disable IDFA collection on iOS
    * @param debug Optional flag to enable debug logging
+   * @param privacyMode Optional flag to stop collection of every device-level identifier on Android and iOS.
+   * `true` stays on across launches until init is called with `false`. Leave it unset to keep the stored value.
    */
   async init(
     token: string,
     secretKey?: string,
     keyId?: string,
     disableIdfa?: boolean,
-    debug?: boolean
+    debug?: boolean,
+    privacyMode?: boolean
   ): Promise<void> {
     // Validate token is not empty/null/whitespace
     if (!token || token.trim().length === 0) {
@@ -70,6 +73,7 @@ class Linkrunner {
         keyId,
         disableIdfa,
         debug,
+        privacyMode,
         packageVersion,
       });
 
