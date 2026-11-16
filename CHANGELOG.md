@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.1] - 2026-11-16
+
+### Changed
+
+- iOS: `LinkrunnerKit` moves to 5.2.1, which ships a privacy manifest (`PrivacyInfo.xcprivacy`). Xcode's privacy report for your app now lists Linkrunner's collected data types and its `UserDefaults` use, so you no longer need to declare them by hand. The CocoaPods dependency is now `~> 5.2.1` and the Swift package `from: "5.2.1"`. Run `pod install` (or resolve packages) after upgrading.
+- Android is unchanged (`io.linkrunner:android-sdk:5.2.0`).
+
 ## [3.2.0] - 2026-11-14
 
 ### Added
