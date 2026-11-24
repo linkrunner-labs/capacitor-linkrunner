@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.3.0] - 2026-11-17
+
+### Changed
+
+- Bundles native Android SDK `io.linkrunner:android-sdk:5.3.0` and iOS SDK `LinkrunnerKit 5.3.0`. Requests are saved to an on-device queue and sent in order while the app runs, so they survive the app being killed or going offline. On Android this replaces one WorkManager job per call, which could start the app in the background and cause ANRs. Run `npx cap sync` after upgrading.
+
+### Fixed
+
+- Android: a tracked event or payment keeps the user id from when it was tracked, so events still waiting to be sent are no longer sent under a user who signed in later.
+- Android: sending no longer slows to about 1 request every 2 seconds while the app's main thread is busy.
+- Release builds no longer write the project token or user details (name, email, phone) to logcat or the console. The native SDKs log only when debug is on, and mask those values even then.
+
 ## [3.2.0] - 2026-11-14
 
 ### Added
