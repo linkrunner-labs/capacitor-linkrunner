@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.3.2] - 2026-11-26
+
+### Changed
+
+- Native SDKs bumped to `io.linkrunner:android-sdk:5.3.1` and `LinkrunnerKit` 5.3.2 (CocoaPods `~> 5.3.2`, Swift package `from: "5.3.2"`). `getAttributionData` and `handleDeeplink` no longer wait up to 5 seconds for init to be sent on a new install, so attribution and deferred deeplinks arrive sooner on the first launch.
+- No API changes. Run `pod install` (or resolve packages) after upgrading.
+
 ## [3.3.1] - 2026-11-24
 
 ### Changed
